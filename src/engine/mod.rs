@@ -34,12 +34,22 @@ impl Engine {
     }
     pub fn default() -> Self {
         Engine {
-            objects: vec![Object::new_poly_from_vec(vec![
-                V2::new(-1., 1.),
-                V2::new(0., 2.),
-                V2::new(1., 1.),
-                V2::new(0., -2.),
-            ])],
+            objects: vec![
+                Object::new_poly_from_vec(vec![
+                    V2::new(-1., 1.),
+                    V2::new(0., 2.),
+                    V2::new(1., 1.),
+                    V2::new(0., -2.),
+                ])
+                .translated(V2::new(-120., 0.), 1.),
+                Object::new_poly_from_vec(vec![
+                    V2::new(-1., 1.),
+                    V2::new(0., 2.),
+                    V2::new(1., 1.),
+                    V2::new(0., -2.),
+                ])
+                .translated(V2::new(120., 0.), 4.),
+            ],
             collision_detection_type: CollisionDetectionAlgo::GJK,
             engine_time: EngineTime::default(),
             engine_physics_info: EnginePhysicsInfo::default(),
@@ -60,7 +70,6 @@ impl Engine {
         for object in self.objects.iter_mut() {
             object.update(self.engine_time.clone(), self.engine_physics_info.clone());
         }
-        self.engine_time.frame_end();
     }
 
     fn draw(&mut self) {

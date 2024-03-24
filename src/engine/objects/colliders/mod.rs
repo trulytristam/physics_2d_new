@@ -1,17 +1,18 @@
 use nalgebra;
 type V2 = nalgebra::Vector2<f64>;
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Poly {
     pub points: Vec<V2>,
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Circle {
     pub pos: V2,
     pub radius: f64,
 }
 
+#[derive(Clone)]
 pub enum Collider {
     Poly(Poly),
     Circle(Circle),

@@ -1,5 +1,5 @@
 use macroquad::prelude::*;
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct RenderInfo {
     pub fill_color: macroquad::color::Color,
     pub line_color: macroquad::color::Color,

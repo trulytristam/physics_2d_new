@@ -2,6 +2,7 @@ use nalgebra;
 
 type V2 = nalgebra::Vector2<f64>;
 
+#[derive(Clone)]
 pub struct PhysicInfo {
     pub pos: V2,
     pub vel: V2,

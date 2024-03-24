@@ -1,4 +1,4 @@
-use macroquad::{self, window::clear_background};
+use macroquad::{self};
 
 pub mod colliders;
 use colliders::Collider;
@@ -21,6 +21,7 @@ use super::EngineTime;
 
 type V2 = nalgebra::Vector2<f64>;
 
+#[derive(Clone)]
 struct ObjectInfo {
     pub vertex_data: Vec<V2>,
     pub render: RenderInfo,
@@ -38,6 +39,7 @@ impl ObjectInfo {
         }
     }
 }
+#[derive(Clone)]
 pub struct Object {
     info: ObjectInfo,
     collider: Collider,
@@ -61,9 +63,17 @@ impl Object {
         return temp;
     }
 
+    pub fn translated(&self, v: V2, a: f64) -> Self {
+        let mut temp = self.clone();
+        temp.info.physic.pos += v;
+        temp.info.physic.ang += a;
+
+        temp
+    }
+
     fn integrate(&mut self, _engine_time: EngineTime, _engine_physics_info: EnginePhysicsInfo) {
         let o = &mut self.info.physic;
-        o.ang = _engine_time.time_since_start().as_secs_f64();
+        o.ang += _engine_time.time_last_frame.as_secs_f64();
         o.pos += o.vel * _engine_time.time_last_frame.as_secs_f64();
     }
     fn generate_collider(&mut self) {
@@ -83,6 +93,7 @@ impl Object {
             }),
         };
     }
+
     pub fn draw(&self, cam: EngineCamera) {
         match &self.collider {
             Collider::Poly(p) => {
