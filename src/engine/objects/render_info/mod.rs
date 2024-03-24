@@ -4,6 +4,7 @@ pub struct RenderInfo {
     pub fill_color: macroquad::color::Color,
     pub line_color: macroquad::color::Color,
     pub show_vert: bool,
+    pub fill: bool,
 }
 impl RenderInfo {
     pub fn default() -> Self {
@@ -11,6 +12,7 @@ impl RenderInfo {
             fill_color: RED,
             line_color: WHITE,
             show_vert: true,
+            fill: true,
         }
     }
 }

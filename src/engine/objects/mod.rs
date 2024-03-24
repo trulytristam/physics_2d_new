@@ -90,6 +90,15 @@ impl Object {
                 for _ in p.points.iter() {
                     let a = p.points[i].world_to_screen(&cam);
                     let b = (p.points[(i + 1) % p.points.len()]).world_to_screen(&cam);
+                    if self.info.render.fill {
+                        let p_screen = self.info.physic.pos.world_to_screen(&cam);
+                        macroquad::shapes::draw_triangle(
+                            a.into_vec2(),
+                            b.into_vec2(),
+                            p_screen.into_vec2(),
+                            self.info.render.fill_color,
+                        )
+                    }
                     macroquad::shapes::draw_line(
                         a.x as f32,
                         a.y as f32,
