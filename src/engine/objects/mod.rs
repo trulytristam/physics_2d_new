@@ -10,7 +10,7 @@ use render_info::RenderInfo;
 pub mod physic_info;
 use physic_info::PhysicInfo;
 
-use super::engine_camera::{Conversion, EngineCamera};
+use super::engine_camera::{ConversionV2, EngineCamera};
 
 use crate::engine::objects::colliders::Circle;
 
@@ -28,7 +28,7 @@ pub struct ObjectInfo {
     pub vertex_data: Vec<V2>,
     pub render: RenderInfo,
     pub physic: PhysicInfo,
-    pub size: f64,
+    pub poly_size: f64,
 }
 
 impl ObjectInfo {
@@ -37,10 +37,11 @@ impl ObjectInfo {
             vertex_data: vec![],
             render: RenderInfo::default(),
             physic: PhysicInfo::default(),
-            size: 70.,
+            poly_size: 70.,
         }
     }
 }
+
 #[derive(Clone)]
 pub struct Object {
     pub info: ObjectInfo,
@@ -84,14 +85,15 @@ impl Object {
                 let mut temp: Vec<V2> = vec![];
                 for p in self.info.vertex_data.iter() {
                     let rot = nalgebra::Rotation2::new(self.info.physic.ang);
-                    let new_p = rot.transform_vector(&p) * self.info.size + self.info.physic.pos;
+                    let new_p =
+                        rot.transform_vector(&p) * self.info.poly_size + self.info.physic.pos;
                     temp.push(new_p)
                 }
                 Collider::Poly(Poly { points: temp })
             }
             Collider::Circle(_) => Collider::Circle(Circle {
                 pos: self.info.physic.pos,
-                radius: self.info.size,
+                radius: self.info.poly_size,
             }),
         };
     }
@@ -130,7 +132,7 @@ impl Object {
                 macroquad::shapes::draw_circle(
                     np.x as f32,
                     np.y as f32,
-                    (self.info.size * cam.scale) as f32,
+                    (self.info.poly_size * cam.scale) as f32,
                     self.info.render.line_color,
                 );
             }

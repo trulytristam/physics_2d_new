@@ -1,6 +1,9 @@
-use macroquad;
+use macroquad::{self, logging::debug};
 mod graphics;
 
+mod helper_functions;
+
+mod debug;
 mod ui;
 
 mod objects;
@@ -18,12 +21,15 @@ use engine_physics_info::EnginePhysicsInfo;
 mod engine_camera;
 use engine_camera::EngineCamera;
 
+use crate::engine::engine_camera::Conversionf32f32;
+
 pub struct Engine {
     objects: Vec<MP<Object>>,
     collision_detection_type: CollisionDetectionAlgo,
     engine_time: EngineTime,
     engine_physics_info: EnginePhysicsInfo,
     ui: ui::Ui,
+    debugger: debug::Debugger,
 
     camera: EngineCamera,
 }
@@ -49,6 +55,7 @@ impl Engine {
             engine_physics_info: EnginePhysicsInfo::default(),
             camera: EngineCamera::default(),
             ui: ui::Ui::default(),
+            debugger: debug::Debugger::default(),
         }
     }
 
@@ -68,6 +75,7 @@ impl Engine {
                 .borrow_mut()
                 .update(self.engine_time.clone(), self.engine_physics_info.clone());
         }
+        self.get_object_under_mouse();
     }
 
     fn user_input(&mut self) {
@@ -77,17 +85,24 @@ impl Engine {
             // )
         }
     }
-    // fn get_object_under_mouse(&self) -> MP<Object> {
-    //     for o in self.objects.iter() {
-    //         let o = o.borrow();
-    //     }
-    //     todo!();
-    // }
+    fn get_object_under_mouse(&self) -> Option<MP<Object>> {
+        self.debugger.draw_red();
+
+        for o in self.objects.iter() {
+            let mouse = macroquad::input::mouse_position().into_V2();
+            if o.borrow().collider.point_inside(&mouse) {
+                return Some(o.clone());
+            }
+        }
+
+        return None;
+    }
 
     fn draw(&mut self) {
         macroquad::prelude::clear_background(macroquad::color::BLACK);
         for object in self.objects.iter() {
             object.borrow_mut().draw(self.camera.clone());
         }
+        self.debugger.draw();
     }
 }
