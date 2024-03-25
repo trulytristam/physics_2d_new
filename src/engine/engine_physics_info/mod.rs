@@ -1,11 +1,11 @@
 #[derive(Clone)]
 pub struct EnginePhysicsInfo {
-    gravity: f64,
+    _gravity: f64,
 }
 
 impl Default for EnginePhysicsInfo {
     fn default() -> Self {
-        EnginePhysicsInfo { gravity: 9.18 }
+        EnginePhysicsInfo { _gravity: 9.18 }
     }
 }
 
