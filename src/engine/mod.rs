@@ -18,8 +18,6 @@ use engine_physics_info::EnginePhysicsInfo;
 mod engine_camera;
 use engine_camera::EngineCamera;
 
-use std::borrow::{Borrow, BorrowMut};
-
 pub struct Engine {
     objects: Vec<MP<Object>>,
     collision_detection_type: CollisionDetectionAlgo,

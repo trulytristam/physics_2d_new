@@ -51,7 +51,7 @@ impl Widjet for ImpulseAdder {
 impl ImpulseAdder {
     pub fn new(object: MP<Object>, mouse_world: V2, id: u32) -> Self {
         ImpulseAdder {
-            object,
+            object: object.clone(),
             point_local: mouse_world.world_to_local(object),
             point_mouse: mouse_world,
             widjet_info: WidjetInfo::default(id),
