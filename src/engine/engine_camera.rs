@@ -1,6 +1,6 @@
-use super::{objects, Object};
+use super::Object;
 use macroquad::prelude::*;
-use nalgebra::{self, AbstractRotation};
+use nalgebra::{self};
 type V2 = nalgebra::Vector2<f64>;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -31,7 +31,7 @@ pub trait ConversionV2 {
     fn world_to_local(&self, object: MP<Object>) -> V2;
 }
 pub trait Conversionf32f32 {
-    fn into_V2(&self) -> V2;
+    fn into_v2(&self) -> V2;
 }
 
 impl ConversionV2 for V2 {
@@ -62,7 +62,7 @@ impl ConversionV2 for V2 {
 }
 
 impl Conversionf32f32 for (f32, f32) {
-    fn into_V2(&self) -> V2 {
+    fn into_v2(&self) -> V2 {
         return V2::new(self.0 as f64, self.1 as f64);
     }
 }

@@ -1,4 +1,4 @@
-use macroquad::{self, logging::debug};
+use macroquad::{self};
 mod graphics;
 
 mod helper_functions;
@@ -22,6 +22,8 @@ mod engine_camera;
 use engine_camera::EngineCamera;
 
 use crate::engine::engine_camera::Conversionf32f32;
+
+use self::engine_camera::ConversionV2;
 
 pub struct Engine {
     objects: Vec<MP<Object>>,
@@ -86,11 +88,12 @@ impl Engine {
         }
     }
     fn get_object_under_mouse(&self) -> Option<MP<Object>> {
-        self.debugger.draw_red();
-
         for o in self.objects.iter() {
-            let mouse = macroquad::input::mouse_position().into_V2();
+            let mouse = macroquad::input::mouse_position()
+                .into_v2()
+                .screen_to_world(&self.camera);
             if o.borrow().collider.point_inside(&mouse) {
+                self.debugger.draw_red();
                 return Some(o.clone());
             }
         }
