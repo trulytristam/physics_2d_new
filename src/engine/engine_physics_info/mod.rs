@@ -8,4 +8,3 @@ impl Default for EnginePhysicsInfo {
         EnginePhysicsInfo { _gravity: 9.18 }
     }
 }
-

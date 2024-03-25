@@ -1,8 +1,9 @@
 use macroquad::{self};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub mod colliders;
 use colliders::Collider;
-
 pub mod render_info;
 use render_info::RenderInfo;
 
@@ -20,9 +21,10 @@ use super::EnginePhysicsInfo;
 use super::EngineTime;
 
 type V2 = nalgebra::Vector2<f64>;
+type MP<T> = Rc<RefCell<T>>;
 
 #[derive(Clone)]
-struct ObjectInfo {
+pub struct ObjectInfo {
     pub vertex_data: Vec<V2>,
     pub render: RenderInfo,
     pub physic: PhysicInfo,
@@ -41,8 +43,8 @@ impl ObjectInfo {
 }
 #[derive(Clone)]
 pub struct Object {
-    info: ObjectInfo,
-    collider: Collider,
+    pub info: ObjectInfo,
+    pub collider: Collider,
 }
 
 impl Object {
@@ -57,18 +59,18 @@ impl Object {
         self.generate_collider();
     }
 
-    pub fn new_poly_from_vec(points: Vec<V2>) -> Object {
+    pub fn new_poly_from_vec(points: Vec<V2>) -> MP<Object> {
         let mut temp = Object::default();
         temp.info.vertex_data = points;
-        return temp;
+        return Rc::new(RefCell::new(temp));
     }
 
-    pub fn translated(&self, v: V2, a: f64) -> Self {
+    pub fn translated(&self, v: V2, a: f64) -> MP<Object> {
         let mut temp = self.clone();
         temp.info.physic.pos += v;
         temp.info.physic.ang += a;
 
-        temp
+        Rc::new(RefCell::new(temp))
     }
 
     fn integrate(&mut self, _engine_time: EngineTime, _engine_physics_info: EnginePhysicsInfo) {

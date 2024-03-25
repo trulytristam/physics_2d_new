@@ -1,5 +1,11 @@
 use nalgebra;
 type V2 = nalgebra::Vector2<f64>;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use super::Object;
+
+type MP<T> = Rc<RefCell<T>>;
 
 #[derive(Clone, Default)]
 pub struct Poly {
@@ -25,14 +31,14 @@ impl Default for Collider {
 }
 
 pub struct Manifold {
+    a: MP<Object>,
+    b: MP<Object>,
     collision_normal: V2,
     collision_point: V2,
 }
 
 impl Collider {
-    fn is_colliding(&self, _other: &Collider) -> Option<Manifold> {
+    pub fn is_colliding(&self, _other: &Collider) -> Option<Manifold> {
         todo!();
     }
-
-    fn test() {}
 }
