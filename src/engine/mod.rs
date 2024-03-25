@@ -3,8 +3,10 @@ mod graphics;
 
 mod helper_functions;
 
-mod debug;
+mod debugger;
 mod ui;
+
+use debugger::DEBBUGER;
 
 mod objects;
 use objects::{Object, MP, V2};
@@ -31,7 +33,6 @@ pub struct Engine {
     engine_time: EngineTime,
     engine_physics_info: EnginePhysicsInfo,
     ui: ui::Ui,
-    debugger: debug::Debugger,
 
     camera: EngineCamera,
 }
@@ -57,7 +58,6 @@ impl Engine {
             engine_physics_info: EnginePhysicsInfo::default(),
             camera: EngineCamera::default(),
             ui: ui::Ui::default(),
-            debugger: debug::Debugger::default(),
         }
     }
 
@@ -93,7 +93,7 @@ impl Engine {
                 .into_v2()
                 .screen_to_world(&self.camera);
             if o.borrow().collider.point_inside(&mouse) {
-                self.debugger.draw_red();
+                DEBBUGER.lock().unwrap().draw_red();
                 return Some(o.clone());
             }
         }
@@ -106,6 +106,6 @@ impl Engine {
         for object in self.objects.iter() {
             object.borrow_mut().draw(self.camera.clone());
         }
-        self.debugger.draw();
+        DEBBUGER.lock().unwrap().draw();
     }
 }
