@@ -20,8 +20,8 @@ use super::EnginePhysicsInfo;
 
 use super::EngineTime;
 
-type V2 = nalgebra::Vector2<f64>;
-type MP<T> = Rc<RefCell<T>>;
+pub type V2 = nalgebra::Vector2<f64>;
+pub type MP<T> = Rc<RefCell<T>>;
 
 #[derive(Clone)]
 pub struct ObjectInfo {

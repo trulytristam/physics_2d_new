@@ -20,3 +20,15 @@ impl Default for PhysicInfo {
         }
     }
 }
+
+impl PhysicInfo {
+    pub fn apply_impulse(&mut self, point: V2, force: V2) {
+        let r_vec = point - self.pos;
+
+        let x = r_vec.normalize().dot(&force.normalize());
+        let f = force.magnitude();
+        let r = r_vec.magnitude();
+        self.ang = self.ang + f * r * x;
+        self.vel = self.vel + force * (1. - x) * self.imass;
+    }
+}
