@@ -56,7 +56,7 @@ impl ConversionV2 for V2 {
     fn world_to_local(&self, object: MP<Object>) -> V2 {
         let object = (*object).borrow();
         let rot = nalgebra::Rotation2::new(-object.info.physic.ang);
-        let p = (rot.transform_vector(&self) - object.info.physic.pos) / object.info.poly_size;
+        let p = rot * (self - object.info.physic.pos) / object.info.poly_size;
         return p;
     }
 }

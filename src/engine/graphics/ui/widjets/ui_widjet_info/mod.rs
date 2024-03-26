@@ -1,7 +1,15 @@
-#[derive(Default)]
 pub struct UiWidjetsInfo {
     widget_id_count: u32,
     pub widget_selected: u32,
+}
+
+impl Default for UiWidjetsInfo {
+    fn default() -> Self {
+        UiWidjetsInfo {
+            widget_id_count: 1,
+            widget_selected: 0,
+        }
+    }
 }
 
 impl UiWidjetsInfo {

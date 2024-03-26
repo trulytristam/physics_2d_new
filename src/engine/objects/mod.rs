@@ -56,6 +56,9 @@ impl Object {
         }
     }
     pub fn update(&mut self, _engine_time: EngineTime, _engine_physics_info: EnginePhysicsInfo) {
+        if self.info.physic.pos.magnitude() > 500. {
+            self.info.physic = PhysicInfo::default();
+        }
         self.integrate(_engine_time, _engine_physics_info);
         self.generate_collider();
     }
@@ -76,8 +79,8 @@ impl Object {
 
     fn integrate(&mut self, _engine_time: EngineTime, _engine_physics_info: EnginePhysicsInfo) {
         let o = &mut self.info.physic;
-        o.ang += _engine_time.time_last_frame.as_secs_f64();
         o.pos += o.vel * _engine_time.time_last_frame.as_secs_f64();
+        o.ang += o.w * _engine_time.time_last_frame.as_secs_f64();
     }
     fn generate_collider(&mut self) {
         self.collider = match &self.collider {

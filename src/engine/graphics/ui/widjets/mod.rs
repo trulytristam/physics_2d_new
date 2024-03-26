@@ -1,5 +1,5 @@
 pub mod impulse_adder;
-use std::{marker::PhantomData, rc::Rc};
+use std::rc::Rc;
 
 use crate::engine::{objects::V2, EngineCamera};
 
@@ -10,19 +10,20 @@ struct WidjetInfo {
     widjet_id: u32,
 }
 
-struct Info<T> {
-    t: PhantomData<T>,
-}
-
+// struct testwidg;
 pub struct ImpulseAdderInfo {
     pub mouse: V2,
 }
-impl UpdateInfo for ImpulseAdderInfo {}
+
+impl UpdateInfo for ImpulseAdderInfo {
+    /// 2 values - mousex and mousey in world coordinates
+    fn to_vec(&self) -> Vec<f64> {
+        vec![self.mouse.x, self.mouse.y]
+    }
+}
 
 pub trait UpdateInfo {
-    fn to_vec(&self) -> Vec<f64> {
-        todo!();
-    }
+    fn to_vec(&self) -> Vec<f64>;
 }
 impl WidjetInfo {
     fn default(widjet_id: u32) -> Self {

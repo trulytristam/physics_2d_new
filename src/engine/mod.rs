@@ -49,17 +49,17 @@ impl Engine {
                 .borrow_mut()
                 .update(self.engine_time.clone(), self.engine_physics_info.clone());
         }
-        self.get_object_under_mouse();
     }
 
     fn user_input(&mut self) {
         if_space_pressed(self);
+        if_space_held(self);
+        if_space_released(self);
     }
     fn get_object_under_mouse(&self) -> Option<MP<Object>> {
         let mouse = self.get_mouse_world();
         for o in self.objects.iter() {
             if o.borrow().collider.point_inside(&mouse) {
-                DEBBUGER.lock().unwrap().draw_red();
                 return Some(o.clone());
             }
         }
@@ -79,6 +79,7 @@ impl Engine {
         for object in self.objects.iter() {
             object.borrow_mut().draw(self.camera.clone());
         }
+        self.ui.draw(&self.camera);
         DEBBUGER.lock().unwrap().draw();
     }
 }
@@ -114,7 +115,17 @@ fn if_space_held(engine: &mut Engine) {
     }
     // todo!();
 }
+fn if_space_released(engine: &mut Engine) {
+    if macroquad::input::is_key_released(macroquad::input::KeyCode::Space) {
+        engine.ui.release_selected_widget(Rc::new(ImpulseAdderInfo {
+            mouse: macroquad::input::mouse_position()
+                .into_v2()
+                .screen_to_world(&engine.camera),
+        }));
+    }
+}
 
+use crate::engine::ui::widjets::ImpulseAdderInfo;
 use std::{cell::RefCell, rc::Rc};
 
 use macroquad::{self};
@@ -144,7 +155,4 @@ use engine_camera::EngineCamera;
 
 use crate::engine::engine_camera::Conversionf32f32;
 
-use self::{
-    engine_camera::ConversionV2,
-    graphics::ui::widjets::{impulse_adder::ImpulseAdder, ImpulseAdderInfo},
-};
+use self::{engine_camera::ConversionV2, graphics::ui::widjets::impulse_adder::ImpulseAdder};

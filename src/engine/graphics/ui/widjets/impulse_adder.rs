@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use super::{UpdateInfo, Widjet, WidjetInfo};
 use crate::engine::{
+    debugger::{DebugColor, DEBBUGER},
     engine_camera::{ConversionV2, EngineCamera},
     objects::{Object, MP, V2},
 };
@@ -35,12 +36,15 @@ impl Widjet for ImpulseAdder {
             c();
         } else {
             let force = self.point_mouse - self.point_local.local_to_world(self.object.clone());
+            let applied_point = self.point_local.local_to_world(self.object.clone());
             (*self.object)
                 .borrow_mut()
                 .info
                 .physic
-                .apply_impulse(self.point_local.local_to_world(self.object.clone()), force);
+                .apply_impulse(applied_point, force / 20.);
         }
+
+        DEBBUGER.lock().unwrap().draw_box(DebugColor::GREEN);
 
         self.widjet_info.delete = true;
     }
