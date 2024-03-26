@@ -41,7 +41,7 @@ impl Widjet for ImpulseAdder {
                 .borrow_mut()
                 .info
                 .physic
-                .apply_impulse(applied_point, force / 20.);
+                .apply_impulse(applied_point, force / 30.);
         }
 
         DEBBUGER.lock().unwrap().draw_box(DebugColor::GREEN);

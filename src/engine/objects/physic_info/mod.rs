@@ -21,7 +21,7 @@ impl Default for PhysicInfo {
             vel: V2::new(0., 0.),
             ang: 0.,
             w: 0.,
-            i_m: 1. / 1.,
+            i_m: 1. / 5.,
             i_i: 1. / 140.,
         }
     }
@@ -36,6 +36,6 @@ impl PhysicInfo {
         let f = force.magnitude();
         let i_i = self.i_i;
         self.w = self.w + force.perp(&r) * i_i;
-        self.vel = self.vel - force.normalize() * (force.perp(&perp_vec) * self.i_m);
+        self.vel = self.vel - force * (force.dot(&r) * self.i_m);
     }
 }
