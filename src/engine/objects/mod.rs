@@ -1,3 +1,4 @@
+use macroquad::shapes::draw_circle;
 use macroquad::{self};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -61,6 +62,15 @@ impl Object {
         }
         self.integrate(_engine_time, _engine_physics_info);
         self.generate_collider();
+    }
+    pub fn offset_local_data(&mut self, offset: V2) -> &Self {
+        let mut temp: Vec<V2> = vec![];
+        for p in self.info.vertex_data.iter() {
+            temp.push(p + offset);
+        }
+
+        self.info.vertex_data = temp;
+        self
     }
 
     pub fn new_poly_from_vec(points: Vec<V2>) -> MP<Object> {
@@ -128,6 +138,14 @@ impl Object {
 
                     i += 1;
                 }
+
+                let center = self.info.physic.pos.world_to_screen(&cam);
+                draw_circle(
+                    center.x as f32,
+                    center.y as f32,
+                    5.,
+                    macroquad::color::WHITE,
+                );
             }
             Collider::Circle(_) => {
                 let o = &self.info.physic;

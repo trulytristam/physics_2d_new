@@ -21,7 +21,7 @@ impl Widjet for ImpulseAdder {
         let a = self.point_local.local_to_world(self.object.clone());
         let a = a.world_to_screen(&cam).into_vec2();
         let b = self.point_mouse.world_to_screen(&cam).into_vec2();
-        draw_line(a.x, a.y, b.x, b.y, 3., RED);
+        draw_line(a.x, a.y, b.x, b.y, 3., WHITE);
     }
 
     fn on_press(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>) {}
@@ -41,7 +41,7 @@ impl Widjet for ImpulseAdder {
                 .borrow_mut()
                 .info
                 .physic
-                .apply_impulse(applied_point, force / 30.);
+                .apply_impulse(applied_point, force * 3.);
         }
 
         DEBBUGER.lock().unwrap().draw_box(DebugColor::GREEN);

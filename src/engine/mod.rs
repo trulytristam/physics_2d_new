@@ -22,7 +22,8 @@ impl Engine {
                 V2::new(1., 1.),
                 V2::new(0., -2.),
             ])
-            .borrow()
+            .borrow_mut()
+            .offset_local_data(V2::new(0., -0.57))
             .translated(V2::new(0., 0.), 1.)],
             collision_detection_type: CollisionDetectionAlgo::GJK,
             engine_time: EngineTime::default(),
