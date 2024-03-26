@@ -5,7 +5,6 @@ pub struct Engine {
 
     engine_physics_info: EnginePhysicsInfo,
     ui: ui::Ui,
-
     camera: EngineCamera,
 }
 
@@ -120,11 +119,11 @@ use std::{cell::RefCell, rc::Rc};
 
 use macroquad::{self};
 mod graphics;
+use graphics::ui;
 
 mod helper_functions;
 
 mod debugger;
-mod ui;
 
 use debugger::DEBBUGER;
 
@@ -147,5 +146,5 @@ use crate::engine::engine_camera::Conversionf32f32;
 
 use self::{
     engine_camera::ConversionV2,
-    ui::widjets::{impulse_adder::ImpulseAdder, ImpulseAdderInfo},
+    graphics::ui::widjets::{impulse_adder::ImpulseAdder, ImpulseAdderInfo},
 };

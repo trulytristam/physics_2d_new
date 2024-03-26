@@ -42,6 +42,6 @@ use std::{cell::RefCell, rc::Rc};
 
 use widjets::Widjet;
 
-use self::widjets::{ui_widjet_info, UpdateInfo};
+use crate::engine::engine_camera;
 
-use super::engine_camera;
+use self::widjets::{ui_widjet_info, UpdateInfo};
