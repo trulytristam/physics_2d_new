@@ -1,20 +1,40 @@
 pub mod widjets;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use widjets::Widjet;
 
 use self::widjets::ui_widjet_info;
 
+use super::engine_camera;
+
 #[derive(Default)]
 pub struct Ui {
-    widjets_info: ui_widjet_info::UiWidjetsInfo,
-    widjets: Vec<Rc<dyn Widjet>>,
+    pub widjets_info: ui_widjet_info::UiWidjetsInfo,
+    widjets: Vec<Rc<RefCell<dyn Widjet>>>,
 }
 
 impl Ui {
-    fn update(&mut self) {}
-
-    fn delete_flagged(&mut self) {
-        self.widjets.retain(|e| !e.get_delete());
+    pub fn update(&mut self) {
+        self.delete_flagged_widgets();
     }
+
+    pub fn delete_flagged_widgets(&mut self) {
+        self.widjets.retain(|e| !e.borrow_mut().get_delete());
+    }
+
+    pub fn add_widget(&mut self, widjet: Rc<RefCell<dyn Widjet>>) {
+        self.widjets.push(widjet);
+    }
+
+    pub fn draw(&mut self, cam: &engine_camera::EngineCamera) {
+        for widget in self.widjets.iter() {
+            widget.borrow().draw(cam);
+        }
+    }
+    pub fn set_selected_widget(&mut self, id: u32) {
+        self.widjets_info.widget_selected = id;
+    }
+
+    pub fn press_selected_widget(&mut self) {}
+    pub fn release_selected_widget(&mut self) {}
 }

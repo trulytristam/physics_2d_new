@@ -38,6 +38,8 @@ impl Widjet for ImpulseAdder {
                 .physic
                 .apply_impulse(self.point_local.local_to_world(self.object.clone()), force);
         }
+
+        self.widjet_info.delete = true;
     }
     fn get_delete(&self) -> bool {
         return self.widjet_info.delete;

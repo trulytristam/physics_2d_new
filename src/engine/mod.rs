@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use macroquad::{self};
 mod graphics;
 
@@ -25,12 +27,13 @@ use engine_camera::EngineCamera;
 
 use crate::engine::engine_camera::Conversionf32f32;
 
-use self::engine_camera::ConversionV2;
+use self::{engine_camera::ConversionV2, ui::widjets::impulse_adder::ImpulseAdder};
 
 pub struct Engine {
     objects: Vec<MP<Object>>,
     collision_detection_type: CollisionDetectionAlgo,
     engine_time: EngineTime,
+
     engine_physics_info: EnginePhysicsInfo,
     ui: ui::Ui,
 
@@ -72,6 +75,7 @@ impl Engine {
 
     fn update(&mut self) {
         self.engine_time.frame_start();
+        self.ui.update();
         for object in self.objects.iter_mut() {
             object
                 .borrow_mut()
@@ -81,17 +85,11 @@ impl Engine {
     }
 
     fn user_input(&mut self) {
-        if macroquad::input::is_key_pressed(macroquad::input::KeyCode::Space) {
-            // let temp = ui::widjets::impulse_adder::ImpulseAdder::new(
-
-            // )
-        }
+        if_space_pressed(self);
     }
     fn get_object_under_mouse(&self) -> Option<MP<Object>> {
+        let mouse = self.get_mouse_world();
         for o in self.objects.iter() {
-            let mouse = macroquad::input::mouse_position()
-                .into_v2()
-                .screen_to_world(&self.camera);
             if o.borrow().collider.point_inside(&mouse) {
                 DEBBUGER.lock().unwrap().draw_red();
                 return Some(o.clone());
@@ -101,11 +99,37 @@ impl Engine {
         return None;
     }
 
+    fn get_mouse_world(&self) -> V2 {
+        let mouse = macroquad::input::mouse_position()
+            .into_v2()
+            .screen_to_world(&self.camera);
+        return mouse;
+    }
+
     fn draw(&mut self) {
         macroquad::prelude::clear_background(macroquad::color::BLACK);
         for object in self.objects.iter() {
             object.borrow_mut().draw(self.camera.clone());
         }
         DEBBUGER.lock().unwrap().draw();
+    }
+}
+
+fn if_space_pressed(engine: &mut Engine) {
+    if macroquad::input::is_key_pressed(macroquad::input::KeyCode::Space) {
+        let object = engine.get_object_under_mouse();
+
+        let new_widget_id = engine.ui.widjets_info.new_widget_id();
+        if let Some(object) = object {
+            engine
+                .ui
+                .add_widget(std::rc::Rc::new(RefCell::new(ImpulseAdder::new(
+                    object,
+                    engine.get_mouse_world(),
+                    new_widget_id,
+                ))));
+        }
+
+        engine.ui.
     }
 }
