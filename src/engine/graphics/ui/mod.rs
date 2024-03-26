@@ -49,7 +49,7 @@ impl Ui {
             if w.borrow().get_widjet_id() == self.widjets_info.widget_selected
                 && self.widjets_info.widget_selected != 0
             {
-                DEBBUGER.lock().unwrap().draw_red();
+                DEBBUGER.draw_box(macroquad::prelude::RED);
                 w.borrow_mut().on_release(info.clone(), None)
             }
         }
@@ -62,7 +62,7 @@ use std::{cell::RefCell, rc::Rc};
 use widjets::Widjet;
 
 use crate::engine::{
-    debugger::{DebugColor, DEBBUGER},
+    debugger::{Debg, DebugColor, DEBBUGER},
     engine_camera,
 };
 

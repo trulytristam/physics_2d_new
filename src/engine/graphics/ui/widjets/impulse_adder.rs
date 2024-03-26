@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use super::{UpdateInfo, Widjet, WidjetInfo};
 use crate::engine::{
-    debugger::{DebugColor, DEBBUGER},
+    debugger::{Debg, DebugColor, DEBBUGER},
     engine_camera::{ConversionV2, EngineCamera},
     objects::{Object, MP, V2},
 };
@@ -44,7 +44,7 @@ impl Widjet for ImpulseAdder {
                 .apply_impulse(applied_point, force * 3.);
         }
 
-        DEBBUGER.lock().unwrap().draw_box(DebugColor::GREEN);
+        DEBBUGER.draw_box(macroquad::prelude::GREEN);
 
         self.widjet_info.delete = true;
     }

@@ -50,6 +50,12 @@ impl Engine {
                 .borrow_mut()
                 .update(self.engine_time.clone(), self.engine_physics_info.clone());
         }
+
+        DEBBUGER.draw_text(
+            format!("{:?}", macroquad::input::mouse_position().into_v2()).as_str(),
+            V2::new(0., 50.),
+            macroquad::prelude::WHITE,
+        );
     }
 
     fn user_input(&mut self) {
@@ -81,7 +87,7 @@ impl Engine {
             object.borrow_mut().draw(self.camera.clone());
         }
         self.ui.draw(&self.camera);
-        DEBBUGER.lock().unwrap().draw();
+        DEBBUGER.draw();
     }
 }
 
@@ -137,6 +143,7 @@ mod helper_functions;
 
 mod debugger;
 
+use debugger::Debg;
 use debugger::DEBBUGER;
 
 mod objects;
