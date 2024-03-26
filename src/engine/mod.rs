@@ -51,10 +51,21 @@ impl Engine {
                 .update(self.engine_time.clone(), self.engine_physics_info.clone());
         }
 
+        let mouse_screen = macroquad::input::mouse_position().into_v2();
         DEBBUGER.draw_text(
-            format!("{:?}", macroquad::input::mouse_position().into_v2()).as_str(),
+            format!("{:?}", mouse_screen).as_str(),
             V2::new(0., 50.),
             macroquad::prelude::WHITE,
+        );
+        DEBBUGER.draw_arrow(
+            mouse_screen,
+            self.objects[0]
+                .borrow_mut()
+                .info
+                .physic
+                .pos
+                .world_to_screen(&self.camera),
+            WHITE,
         );
     }
 
@@ -135,6 +146,7 @@ fn if_space_released(engine: &mut Engine) {
 use crate::engine::ui::widjets::ImpulseAdderInfo;
 use std::{cell::RefCell, rc::Rc};
 
+use macroquad::color::WHITE;
 use macroquad::{self};
 mod graphics;
 use graphics::ui;

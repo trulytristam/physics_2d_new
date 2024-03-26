@@ -60,7 +60,11 @@ impl Debg for Mutex<Debugger> {
     fn draw_arrow(&self, a_screen: V2, b_screen: V2, col: prelude::Color) {
         let mut g = self.lock().unwrap();
         let col = col.clone();
-        let v = b_screen - a_screen;
+        let v = (a_screen - b_screen).normalize() * 20.;
+        let rot1 = nalgebra::Rotation2::new(std::f64::consts::PI / 6.);
+        let rot2 = nalgebra::Rotation2::new(std::f64::consts::PI / -6.);
+        let a1 = b_screen + rot1 * v;
+        let a2 = b_screen + rot2 * v;
         g.add_callback(Arc::new(move || {
             prelude::draw_line(
                 a_screen.x as f32,
@@ -71,16 +75,16 @@ impl Debg for Mutex<Debugger> {
                 col,
             );
             prelude::draw_line(
-                a_screen.x as f32,
-                a_screen.y as f32,
+                a1.x as f32,
+                a1.y as f32,
                 b_screen.x as f32,
                 b_screen.y as f32,
                 4.,
                 col,
             );
             prelude::draw_line(
-                a_screen.x as f32,
-                a_screen.y as f32,
+                a2.x as f32,
+                a2.y as f32,
                 b_screen.x as f32,
                 b_screen.y as f32,
                 4.,
