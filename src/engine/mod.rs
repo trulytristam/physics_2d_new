@@ -1,37 +1,3 @@
-use std::cell::RefCell;
-
-use macroquad::{self};
-mod graphics;
-
-mod helper_functions;
-
-mod debugger;
-mod ui;
-
-use debugger::DEBBUGER;
-
-mod objects;
-use objects::{Object, MP, V2};
-
-mod physics;
-use physics::collisions::CollisionDetectionAlgo;
-
-mod engine_time;
-use engine_time::EngineTime;
-
-mod engine_physics_info;
-use engine_physics_info::EnginePhysicsInfo;
-
-mod engine_camera;
-use engine_camera::EngineCamera;
-
-use crate::engine::engine_camera::Conversionf32f32;
-
-use self::{
-    engine_camera::ConversionV2,
-    ui::widjets::{impulse_adder::ImpulseAdder, WidjetUpdateInfo},
-};
-
 pub struct Engine {
     objects: Vec<MP<Object>>,
     collision_detection_type: CollisionDetectionAlgo,
@@ -137,10 +103,49 @@ fn if_space_pressed(engine: &mut Engine) {
     }
 }
 
+#[rustfmt::skip]
 fn if_space_held(engine: &mut Engine) {
     if macroquad::input::is_key_down(macroquad::input::KeyCode::Space) {
-        engine
-            .ui
-            .press_selected_widget(&WidjetUpdateInfo { v2s: vec![] });
+        engine.ui.press_selected_widget(Rc::new(
+            ImpulseAdderInfo {
+            mouse: macroquad::input::mouse_position()
+                .into_v2()
+                .screen_to_world(&engine.camera),
+        }));
     }
+    // todo!();
 }
+
+use std::{cell::RefCell, rc::Rc};
+
+use macroquad::{self};
+mod graphics;
+
+mod helper_functions;
+
+mod debugger;
+mod ui;
+
+use debugger::DEBBUGER;
+
+mod objects;
+use objects::{Object, MP, V2};
+
+mod physics;
+use physics::collisions::CollisionDetectionAlgo;
+
+mod engine_time;
+use engine_time::EngineTime;
+
+mod engine_physics_info;
+use engine_physics_info::EnginePhysicsInfo;
+
+mod engine_camera;
+use engine_camera::EngineCamera;
+
+use crate::engine::engine_camera::Conversionf32f32;
+
+use self::{
+    engine_camera::ConversionV2,
+    ui::widjets::{impulse_adder::ImpulseAdder, ImpulseAdderInfo},
+};

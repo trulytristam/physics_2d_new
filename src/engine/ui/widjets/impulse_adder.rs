@@ -1,4 +1,6 @@
-use super::{Widjet, WidjetInfo, WidjetUpdateInfo};
+use std::rc::Rc;
+
+use super::{UpdateInfo, Widjet, WidjetInfo};
 use crate::engine::{
     engine_camera::{ConversionV2, EngineCamera},
     objects::{Object, MP, V2},
@@ -21,13 +23,14 @@ impl Widjet for ImpulseAdder {
         draw_line(a.x, a.y, b.x, b.y, 3., RED);
     }
 
-    fn on_press(&mut self, info: &WidjetUpdateInfo, callback: Option<fn() -> ()>) {}
-    fn on_hold(&mut self, info: &WidjetUpdateInfo, callback: Option<fn() -> ()>) {
-        if info.v2s.len() > 0 {
-            self.point_mouse = info.v2s[0];
+    fn on_press(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>) {}
+    fn on_hold(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>) {
+        let info_data = info.to_vec();
+        if info_data.len() > 0 {
+            self.point_mouse = V2::new(info_data[0], info_data[1]);
         }
     }
-    fn on_release(&mut self, info: &WidjetUpdateInfo, callback: Option<fn() -> ()>) {
+    fn on_release(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>) {
         if let Some(c) = callback {
             c();
         } else {

@@ -1,12 +1,3 @@
-pub mod widjets;
-use std::{cell::RefCell, rc::Rc};
-
-use widjets::Widjet;
-
-use self::widjets::{ui_widjet_info, WidjetUpdateInfo};
-
-use super::engine_camera;
-
 #[derive(Default)]
 pub struct Ui {
     pub widjets_info: ui_widjet_info::UiWidjetsInfo,
@@ -35,13 +26,22 @@ impl Ui {
         self.widjets_info.widget_selected = id;
     }
 
-    pub fn press_selected_widget(&mut self, info: &WidjetUpdateInfo) {
+    pub fn press_selected_widget(&mut self, info: Rc<dyn UpdateInfo>) {
         for w in self.widjets.iter_mut() {
             if w.borrow().get_widjet_id() == self.widjets_info.widget_selected {
-                w.borrow_mut().on_press(info, None)
+                w.borrow_mut().on_press(info.clone(), None)
             }
         }
     }
 
     pub fn release_selected_widget(&mut self) {}
 }
+
+pub mod widjets;
+use std::{cell::RefCell, rc::Rc};
+
+use widjets::Widjet;
+
+use self::widjets::{ui_widjet_info, UpdateInfo};
+
+use super::engine_camera;
