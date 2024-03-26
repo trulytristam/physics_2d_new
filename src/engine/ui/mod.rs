@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use widjets::Widjet;
 
-use self::widjets::ui_widjet_info;
+use self::widjets::{ui_widjet_info, WidjetUpdateInfo};
 
 use super::engine_camera;
 
@@ -35,6 +35,13 @@ impl Ui {
         self.widjets_info.widget_selected = id;
     }
 
-    pub fn press_selected_widget(&mut self) {}
+    pub fn press_selected_widget(&mut self, info: &WidjetUpdateInfo) {
+        for w in self.widjets.iter_mut() {
+            if w.borrow().get_widjet_id() == self.widjets_info.widget_selected {
+                w.borrow_mut().on_press(info, None)
+            }
+        }
+    }
+
     pub fn release_selected_widget(&mut self) {}
 }

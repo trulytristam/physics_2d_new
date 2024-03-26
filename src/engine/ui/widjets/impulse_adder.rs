@@ -21,13 +21,13 @@ impl Widjet for ImpulseAdder {
         draw_line(a.x, a.y, b.x, b.y, 3., RED);
     }
 
-    fn on_press(&mut self, info: WidjetUpdateInfo, callback: Option<fn() -> ()>) {}
-    fn on_hold(&mut self, info: WidjetUpdateInfo, callback: Option<fn() -> ()>) {
+    fn on_press(&mut self, info: &WidjetUpdateInfo, callback: Option<fn() -> ()>) {}
+    fn on_hold(&mut self, info: &WidjetUpdateInfo, callback: Option<fn() -> ()>) {
         if info.v2s.len() > 0 {
             self.point_mouse = info.v2s[0];
         }
     }
-    fn on_release(&mut self, info: WidjetUpdateInfo, callback: Option<fn() -> ()>) {
+    fn on_release(&mut self, info: &WidjetUpdateInfo, callback: Option<fn() -> ()>) {
         if let Some(c) = callback {
             c();
         } else {

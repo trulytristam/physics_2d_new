@@ -27,7 +27,10 @@ use engine_camera::EngineCamera;
 
 use crate::engine::engine_camera::Conversionf32f32;
 
-use self::{engine_camera::ConversionV2, ui::widjets::impulse_adder::ImpulseAdder};
+use self::{
+    engine_camera::ConversionV2,
+    ui::widjets::{impulse_adder::ImpulseAdder, WidjetUpdateInfo},
+};
 
 pub struct Engine {
     objects: Vec<MP<Object>>,
@@ -130,6 +133,14 @@ fn if_space_pressed(engine: &mut Engine) {
                 ))));
         }
 
-        engine.ui.
+        engine.ui.set_selected_widget(new_widget_id);
+    }
+}
+
+fn if_space_held(engine: &mut Engine) {
+    if macroquad::input::is_key_down(macroquad::input::KeyCode::Space) {
+        engine
+            .ui
+            .press_selected_widget(&WidjetUpdateInfo { v2s: vec![] });
     }
 }
