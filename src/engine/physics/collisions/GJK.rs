@@ -31,6 +31,7 @@ struct SimplexEvolveResult {
 impl Simplex {
     fn evolve_simplex(&mut self, p: MinkowPoint) -> SimplexEvolveResult {
         match self.points.len() {
+            //test
             0 => {
                 self.points.push(p);
                 SimplexEvolveResult {
