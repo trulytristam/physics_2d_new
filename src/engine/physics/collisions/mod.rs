@@ -1,6 +1,7 @@
 mod gjk;
 
 use crate::engine::objects::colliders::Manifold;
+pub mod helper_functions;
 
 use super::super::Object;
 use std::cell::RefCell;

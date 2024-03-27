@@ -1,9 +1,10 @@
 use nalgebra;
 type V2 = nalgebra::Vector2<f64>;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::engine::helper_functions;
+use crate::engine::helper_functions::{self, point_inside_shape};
 
 use super::Object;
 
@@ -89,18 +90,7 @@ impl Collider {
 
 impl Poly {
     fn point_inside(&self, point: &V2) -> bool {
-        for i in 0..self.points.len() {
-            let a = self.points[i];
-            let b = self.points[(i + 1) % self.points.len()];
-            let v = b - a;
-            let o = point - a;
-            let n = helper_functions::get_perp_matrix() * v;
-
-            if o.dot(&n) > 0. {
-                return false;
-            }
-        }
-        return true;
+        point_inside_shape(&self.points, point)
     }
 }
 impl Circle {

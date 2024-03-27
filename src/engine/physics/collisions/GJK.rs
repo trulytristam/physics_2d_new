@@ -1,3 +1,4 @@
+use crate::engine::helper_functions::point_inside_shape;
 use crate::engine::objects::{colliders::Collider, V2};
 use macroquad::math::Vec3;
 use macroquad::prelude::rand;
@@ -25,11 +26,20 @@ struct ClosestPoint {
     point: V2,
     parent: ParentCount,
 }
+impl ClosestPoint {
+    fn get_new_dir(&self) -> V2 {
+        (self.point * -1.).normalize()
+    }
+}
 struct SimplexEvolveResult {
     point_inside_simplex: bool,
 }
 impl Simplex {
     fn evolve_simplex(&mut self, p: MinkowPoint) -> SimplexEvolveResult {
+        let closest = self.closest_point_to_origin();
+        if let Some(closest) = closest {
+            self.dir = closest.get_new_dir();
+        }
         match self.points.len() {
             //test
             0 => {
@@ -51,7 +61,17 @@ impl Simplex {
                 }
             }
             3 => {
-                todo!();
+                let shape = self.points.iter().map(|p| p.p).collect();
+                if point_inside_shape(&shape, &V2::new(0., 0.)) {
+                    SimplexEvolveResult {
+                        point_inside_simplex: true,
+                    }
+                } else {
+                    self.clean_simplex();
+                    SimplexEvolveResult {
+                        point_inside_simplex: false,
+                    }
+                }
             }
 
             _ => SimplexEvolveResult {
@@ -135,7 +155,18 @@ fn get_minko_point(dir: V2, _a: &Collider, _b: &Collider) -> MinkowPoint {
     }
 }
 
+#[allow(unreachable_code)]
 fn gjk(_a: Collider, _b: Collider) -> bool {
+    let mut simp = Simplex::default();
+
+    loop {
+        let minkow_point = get_minko_point(simp.dir, &_a, &_b);
+        let evolve_result = simp.evolve_simplex(minkow_point);
+
+        if evolve_result.point_inside_simplex {
+            break;
+        }
+    }
     todo!();
 }
 
