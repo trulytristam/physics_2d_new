@@ -1,3 +1,5 @@
+mod GJK;
+
 use crate::engine::objects::colliders::Manifold;
 
 use super::super::Object;

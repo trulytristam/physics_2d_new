@@ -1,11 +1,7 @@
 extern crate proc_macro;
 use lazy_static::lazy_static;
 use macroquad::prelude;
-use std::{
-    borrow::Borrow,
-    rc::Rc,
-    sync::{Arc, Mutex, MutexGuard},
-};
+use std::sync::{Arc, Mutex};
 
 use super::objects::V2;
 #[derive(Default)]

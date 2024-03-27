@@ -44,7 +44,7 @@ impl Widjet for ImpulseAdder {
                 .apply_impulse(applied_point, force * 3.);
         }
 
-        DEBBUGER.draw_box(macroquad::prelude::GREEN);
+        // DEBBUGER.draw_box(macroquad::prelude::GREEN);
 
         self.widjet_info.delete = true;
     }
