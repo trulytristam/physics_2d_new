@@ -61,9 +61,6 @@ use std::{cell::RefCell, rc::Rc};
 
 use widjets::Widjet;
 
-use crate::engine::{
-    debugger::{Debg, DEBBUGER},
-    engine_camera,
-};
+use crate::engine::engine_camera;
 
 use self::widjets::{ui_widjet_info, UpdateInfo};

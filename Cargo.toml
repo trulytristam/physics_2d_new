@@ -9,5 +9,6 @@ edition = "2021"
 lazy_static = "1.4.0"
 macroquad = "0.4.5"
 nalgebra = "0.32.4"
+random = "0.14.0"
 
 

@@ -1,4 +1,4 @@
-mod GJK;
+mod gjk;
 
 use crate::engine::objects::colliders::Manifold;
 

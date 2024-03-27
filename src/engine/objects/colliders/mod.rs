@@ -38,6 +38,10 @@ pub struct Manifold {
     collision_normal: V2,
     collision_point: V2,
 }
+pub struct SupportInfo {
+    pub index: Option<usize>,
+    pub point: V2,
+}
 
 impl Collider {
     pub fn is_colliding(&self, _other: &Collider) -> Option<Manifold> {
@@ -48,6 +52,37 @@ impl Collider {
         match self {
             Collider::Poly(p) => p.point_inside(point),
             Collider::Circle(c) => c.point_inside(point),
+        }
+    }
+
+    pub fn get_support(&self, dir_unit: &V2) -> SupportInfo {
+        match self {
+            Collider::Poly(poly) => {
+                let mut furthest: f64 = 0.;
+                let mut furthest_point: Option<V2> = None;
+                let mut furthest_i = 0;
+
+                let mut i = 0;
+                for p in poly.points.iter() {
+                    let d = dir_unit.dot(&p);
+
+                    if d > furthest || furthest_point.is_none() {
+                        furthest = d;
+                        furthest_point = Some(p.clone());
+                        furthest_i = i;
+                    }
+                    i += 1;
+                }
+
+                SupportInfo {
+                    index: Some(furthest_i),
+                    point: furthest_point.unwrap(),
+                }
+            }
+            Collider::Circle(circle) => SupportInfo {
+                index: None,
+                point: circle.pos + dir_unit * circle.radius,
+            },
         }
     }
 }
