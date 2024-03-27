@@ -1,10 +1,10 @@
-use crate::engine::helper_functions::point_inside_shape;
+#![allow(dead_code)]
+use crate::engine::helper_functions::{gen_perp_matrix, point_inside_shape};
 use crate::engine::objects::{colliders::Collider, V2};
-use macroquad::math::Vec3;
 use macroquad::prelude::rand;
 
 struct Simplex {
-    points: Vec<MinkowPoint>,
+    minko_points: Vec<MinkowPoint>,
     dir: V2,
 }
 impl Default for Simplex {
@@ -12,7 +12,7 @@ impl Default for Simplex {
         let x: f64 = rand::gen_range(-1., 1.);
         let y: f64 = rand::gen_range(-1., 1.);
         Simplex {
-            points: Vec::new(),
+            minko_points: Vec::new(),
             dir: V2::new(x, y).normalize(),
         }
     }
@@ -40,34 +40,35 @@ impl Simplex {
         if let Some(closest) = closest {
             self.dir = closest.get_new_dir();
         }
-        match self.points.len() {
+        match self.minko_points.len() {
             //test
             0 => {
-                self.points.push(p);
+                self.minko_points.push(p);
                 SimplexEvolveResult {
                     point_inside_simplex: false,
                 }
             }
             1 => {
-                self.points.push(p);
+                self.minko_points.push(p);
                 SimplexEvolveResult {
                     point_inside_simplex: false,
                 }
             }
             2 => {
-                self.points.push(p);
+                self.push_arrange_clockwise(p);
                 SimplexEvolveResult {
                     point_inside_simplex: false,
                 }
             }
             3 => {
-                let shape = self.points.iter().map(|p| p.p).collect();
+                let shape = self.minko_points.iter().map(|p| p.p).collect();
                 if point_inside_shape(&shape, &V2::new(0., 0.)) {
                     SimplexEvolveResult {
                         point_inside_simplex: true,
                     }
                 } else {
                     self.clean_simplex();
+                    self.push_arrange_clockwise(p);
                     SimplexEvolveResult {
                         point_inside_simplex: false,
                     }
@@ -80,28 +81,62 @@ impl Simplex {
         }
     }
 
+    fn push_arrange_clockwise(&mut self, p: MinkowPoint) {
+        assert!(self.minko_points.len() == 2);
+
+        let a = self.minko_points[0].p;
+        let b = self.minko_points[1].p;
+
+        let v = b - a;
+        let v_perp = gen_perp_matrix() * v;
+
+        let dot = v_perp.dot(&p.p);
+
+        if dot < 1. {
+            self.minko_points.push(p);
+        } else {
+            let temp = self.minko_points.remove(1);
+            self.minko_points.push(p);
+            self.minko_points.push(temp);
+        }
+    }
+
     fn closest_point_to_origin(&self) -> Option<ClosestPoint> {
-        match self.points.len() {
+        match self.minko_points.len() {
             1 => Some(ClosestPoint {
-                point: self.points[0].p,
-                parent: ParentCount::One(self.points[0].clone()),
+                point: self.minko_points[0].p,
+                parent: ParentCount::One(self.minko_points[0].clone()),
             }),
-            2 => Some(closest_to_line(&self.points[0], &self.points[1])),
+            2 => Some(closest_to_line(
+                &self.minko_points[0],
+                &self.minko_points[1],
+            )),
             3 => Some(closest_to_tri([
-                &self.points[0],
-                &self.points[1],
-                &self.points[2],
+                &self.minko_points[0],
+                &self.minko_points[1],
+                &self.minko_points[2],
             ])),
             _ => None,
         }
     }
 
+    ///removes furthest point from origin
     fn clean_simplex(&mut self) {
-        //remove furthest point from origin
-    }
+        let dir = self.dir * -1.;
+        let mut furthest: Option<f64> = None;
+        let mut furthest_i = 0;
 
-    fn new_dir(&mut self) {}
-    fn random_dir(&mut self) {}
+        let mut i = 0;
+        for point in self.minko_points.iter() {
+            let dist = dir.dot(&point.p);
+            if furthest.is_none() || dist > furthest.unwrap() {
+                furthest = Some(dist);
+                furthest_i = i;
+            }
+            i += 1;
+        }
+        self.minko_points.remove(furthest_i);
+    }
 }
 fn closest_to_line(a: &MinkowPoint, b: &MinkowPoint) -> ClosestPoint {
     let v = b.p - a.p;
