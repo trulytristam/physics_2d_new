@@ -4,7 +4,7 @@ type V2 = nalgebra::Vector2<f64>;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::engine::helper_functions::{self, point_inside_shape};
+use crate::engine::helper_functions::point_inside_shape;
 
 use super::Object;
 
@@ -33,11 +33,12 @@ impl Default for Collider {
     }
 }
 
+#[derive(Clone)]
 pub struct Manifold {
-    a: MP<Object>,
-    b: MP<Object>,
-    collision_normal: V2,
-    collision_point: V2,
+    pub a: MP<Object>,
+    pub b: MP<Object>,
+    pub collision_normal: V2,
+    pub collision_point: V2,
 }
 pub struct SupportInfo {
     pub index: Option<usize>,
@@ -59,7 +60,7 @@ impl Collider {
     pub fn get_support(&self, dir_unit: &V2) -> SupportInfo {
         match self {
             Collider::Poly(poly) => {
-                let mut furthest: f64 = 0.;
+                let mut furthest: Option<f64> = None;
                 let mut furthest_point: Option<V2> = None;
                 let mut furthest_i = 0;
 
@@ -67,8 +68,8 @@ impl Collider {
                 for p in poly.points.iter() {
                     let d = dir_unit.dot(&p);
 
-                    if d > furthest || furthest_point.is_none() {
-                        furthest = d;
+                    if furthest_point.is_none() || d > furthest.unwrap() {
+                        furthest = Some(d);
                         furthest_point = Some(p.clone());
                         furthest_i = i;
                     }

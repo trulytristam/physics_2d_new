@@ -1,4 +1,5 @@
 mod engine;
+mod test;
 
 #[macroquad::main("BasicShapes")]
 async fn main() {

@@ -1,8 +1,6 @@
 pub struct Engine {
     objects: Vec<MP<Object>>,
-    collision_detection_type: CollisionDetectionAlgo,
     engine_time: EngineTime,
-
     engine_physics_info: EnginePhysicsInfo,
     ui: ui::Ui,
     camera: EngineCamera,
@@ -16,16 +14,26 @@ impl Engine {
 
     pub fn default() -> Self {
         Engine {
-            objects: vec![Object::new_poly_from_vec(vec![
-                V2::new(-1., 1.),
-                V2::new(0., 2.),
-                V2::new(1., 1.),
-                V2::new(0., -2.),
-            ])
-            .borrow_mut()
-            .offset_local_data(V2::new(0., -0.57))
-            .translated(V2::new(0., 0.), 1.)],
-            collision_detection_type: CollisionDetectionAlgo::GJK,
+            objects: vec![
+                Object::new_poly_from_vec(vec![
+                    V2::new(-1., 1.),
+                    V2::new(0., 2.),
+                    V2::new(1., 1.),
+                    V2::new(0., -2.),
+                ])
+                .borrow_mut()
+                .offset_local_data(V2::new(0., -0.57))
+                .translated(V2::new(100., 0.), 1.),
+                Object::new_poly_from_vec(vec![
+                    V2::new(-1., 1.),
+                    V2::new(0., 2.),
+                    V2::new(1., 1.),
+                    V2::new(0., -2.),
+                ])
+                .borrow_mut()
+                .offset_local_data(V2::new(0., -0.57))
+                .translated(V2::new(-100., 0.), 1.),
+            ],
             engine_time: EngineTime::default(),
             engine_physics_info: EnginePhysicsInfo::default(),
             camera: EngineCamera::default(),
@@ -50,6 +58,14 @@ impl Engine {
                 .borrow_mut()
                 .update(self.engine_time.clone(), self.engine_physics_info.clone());
         }
+        self.engine_physics_info
+            ._collisions
+            .generate_pairs(&self.objects);
+
+        let n = self.engine_physics_info._collisions.count_pairs();
+        let text = format!("number of pairs {}", n);
+        let text = text.as_str();
+        DEBBUGER.draw_text(text, V2::new(40., 40.), macroquad::color::RED);
     }
 
     fn user_input(&mut self) {
@@ -80,6 +96,9 @@ impl Engine {
             object.borrow_mut().draw(self.camera.clone());
         }
         self.ui.draw(&self.camera);
+        self.engine_physics_info
+            ._collisions
+            .draw_pairs(&self.camera);
         DEBBUGER.draw();
     }
 }
@@ -143,6 +162,7 @@ mod objects;
 use objects::{Object, MP, V2};
 
 mod physics;
+pub use physics::collisions;
 use physics::collisions::CollisionDetectionAlgo;
 
 mod engine_time;
