@@ -8,6 +8,7 @@ pub struct Simplex {
     minko_points: Vec<MinkowPoint>,
     dir: V2,
     collision_delta: f64,
+    collision_found: bool,
 }
 impl Default for Simplex {
     fn default() -> Self {
@@ -17,6 +18,7 @@ impl Default for Simplex {
             minko_points: Vec::new(),
             dir: V2::new(x, y).normalize(),
             collision_delta: 0.001,
+            collision_found: false,
         }
     }
 }
@@ -89,6 +91,9 @@ impl Simplex {
     pub fn evolve_simplex(&mut self, p: MinkowPoint) -> EvolveResult {
         let mut closest = self.closest_point_to_origin();
         if !self.candidate_valid(&p) {
+            if self.collision_found {
+                return EvolveResult::terminate_(true, closest);
+            }
             return EvolveResult::terminate_(false, closest);
         }
         //grow simplex
@@ -106,7 +111,8 @@ impl Simplex {
                 self.push_arrange_clockwise(p);
                 let shape = self.minko_points.iter().map(|p| p.p).collect();
                 if point_inside_shape(&shape, &V2::new(0., 0.)) {
-                    return EvolveResult::terminate_(true, closest);
+                    self.collision_found = true;
+                    return EvolveResult::continue_();
                 }
                 EvolveResult::continue_()
             }
@@ -115,7 +121,8 @@ impl Simplex {
                 self.push_arrange_clockwise(p);
                 let shape = self.minko_points.iter().map(|p| p.p).collect();
                 if point_inside_shape(&shape, &V2::new(0., 0.)) {
-                    return EvolveResult::terminate_(true, closest);
+                    self.collision_found = true;
+                    return EvolveResult::continue_();
                 }
                 EvolveResult::continue_()
             }

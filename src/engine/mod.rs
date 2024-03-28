@@ -1,5 +1,6 @@
 pub struct Engine {
     objects: Vec<MP<Object>>,
+    selected_obejct: usize,
     engine_time: EngineTime,
     engine_physics_info: EnginePhysicsInfo,
     ui: ui::Ui,
@@ -33,6 +34,7 @@ impl Engine {
                 .offset_local_data(V2::new(0., -0.57))
                 .translated(V2::new(-100., 0.), 1.),
             ],
+            selected_obejct: 0,
             engine_time: EngineTime::default(),
             engine_physics_info: EnginePhysicsInfo::default(),
             ui: ui::Ui::default(),
@@ -51,6 +53,7 @@ impl Engine {
     fn update(&mut self) {
         self.engine_time.frame_start();
         self.ui.update();
+        self.handle_selected_object();
         for object in self.objects.iter_mut() {
             object
                 .borrow_mut()
@@ -89,6 +92,55 @@ impl Engine {
         }
 
         return None;
+    }
+    fn handle_selected_object(&mut self) {
+        let move_speed = 40.;
+        let rot_speed = 1.;
+        if (0..self.objects.len()).contains(&self.selected_obejct) {
+            let o = self.objects.get(self.selected_obejct);
+            let o = o.unwrap();
+            use macroquad::input::KeyCode::{Down, Left, Right, Space, Up, A, D, S, W};
+            let move_o = |v: V2| {
+                o.borrow_mut().info.physic.kill_momentum();
+                o.borrow_mut().info.physic.pos +=
+                    v * self.engine_time.time_last_frame.as_secs_f64();
+            };
+            let rot_o = |a: f64| {
+                o.borrow_mut().info.physic.kill_momentum();
+                o.borrow_mut().info.physic.ang +=
+                    a * self.engine_time.time_last_frame.as_secs_f64();
+            };
+            for k in macroquad::prelude::get_keys_down() {
+                match k {
+                    W => {
+                        move_o(V2::new(0., -move_speed));
+                    }
+                    A => {
+                        move_o(V2::new(-move_speed, -0.));
+                    }
+                    S => {
+                        move_o(V2::new(0., move_speed));
+                    }
+                    D => {
+                        move_o(V2::new(move_speed, 0.));
+                    }
+                    Up => {}
+                    Down => {}
+                    Right => rot_o(rot_speed),
+                    Left => rot_o(-rot_speed),
+                    _ => (),
+                }
+            }
+
+            for k in macroquad::prelude::get_keys_pressed() {
+                match k {
+                    Space => {
+                        self.selected_obejct = (self.selected_obejct + 1) % self.objects.len();
+                    }
+                    _ => (),
+                }
+            }
+        }
     }
 
     fn get_mouse_world(&self) -> V2 {

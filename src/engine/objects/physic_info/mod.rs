@@ -35,4 +35,8 @@ impl PhysicInfo {
         self.w = self.w + force.perp(&r) * self.i_i;
         self.vel = self.vel - force.normalize() * (force.dot(&r.normalize()) * self.i_m) * dir;
     }
+    pub fn kill_momentum(&mut self) {
+        self.vel = V2::new(0., 0.);
+        self.w = 0.;
+    }
 }
