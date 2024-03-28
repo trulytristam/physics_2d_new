@@ -61,17 +61,20 @@ impl Simplex {
             }
             2 => {
                 self.push_arrange_clockwise(p);
+                let shape = self.minko_points.iter().map(|p| p.p).collect();
+                if point_inside_shape(&shape, &V2::new(0., 0.)) {
+                    return GjkInstruction::Terminate(true);
+                }
                 GjkInstruction::Continue
             }
             3 => {
+                self.clean_simplex();
+                self.push_arrange_clockwise(p);
                 let shape = self.minko_points.iter().map(|p| p.p).collect();
                 if point_inside_shape(&shape, &V2::new(0., 0.)) {
-                    GjkInstruction::Terminate(true)
-                } else {
-                    self.clean_simplex();
-                    self.push_arrange_clockwise(p);
-                    GjkInstruction::Continue
+                    return GjkInstruction::Terminate(true);
                 }
+                GjkInstruction::Continue
             }
 
             _ => unreachable!("gjk has to many points: from evolve_simplex()"),
@@ -131,6 +134,8 @@ impl Simplex {
 
     ///removes furthest point from origin
     fn clean_simplex(&mut self) {
+        // works
+        assert!(self.minko_points.len() == 3);
         let dir = self.dir * -1.;
         let mut furthest: Option<f64> = None;
         let mut furthest_i = 0;
@@ -145,10 +150,11 @@ impl Simplex {
             i += 1;
         }
         self.minko_points.remove(furthest_i);
-        println!("n Points {}", self.minko_points.len());
+        // println!("n Points {}", self.minko_points.len());
     }
 }
 fn closest_to_line(a: &MinkowPoint, b: &MinkowPoint) -> ClosestPoint {
+    //works
     let v = b.p - a.p;
     let v_n = v.normalize();
     let a_i = a.p * -1.;
@@ -173,7 +179,7 @@ fn closest_to_line(a: &MinkowPoint, b: &MinkowPoint) -> ClosestPoint {
     }
 }
 
-fn closest_to_tri(points: [&MinkowPoint; 3]) -> ClosestPoint {
+pub fn closest_to_tri(points: [&MinkowPoint; 3]) -> ClosestPoint {
     let mut closest = None;
     let mut min_dist: Option<f64> = None;
     for i in 0..3 {
@@ -241,7 +247,7 @@ impl MinkowPoint {
 #[cfg(test)]
 mod gjk_tests {
 
-    use crate::engine::objects::V2;
+    use crate::engine::{collisions::gjk::closest_to_tri, objects::V2};
 
     use super::{closest_to_line, MinkowPoint, Simplex};
 
@@ -251,6 +257,7 @@ mod gjk_tests {
         let a = MinkowPoint::new_from_v2(V2::new(-2., 0.));
         let b = MinkowPoint::new_from_v2(V2::new(0., 2.));
         let c = MinkowPoint::new_from_v2(V2::new(-2., 2.));
+
         let result_a = s.evolve_simplex(a);
         println!("result a {:?}", result_a);
         println!("new dir a {:?}\n", s.dir);
@@ -259,6 +266,7 @@ mod gjk_tests {
         println!("new dir b {:?} \n", s.dir);
         let result_c = s.evolve_simplex(c);
         println!("result c {:?}", result_c);
+        println!("new dir c {:?} \n", s.dir);
 
         //-----------------
         let d = MinkowPoint::new_from_v2(V2::new(2., -2.));
@@ -276,6 +284,17 @@ mod gjk_tests {
         let result = closest_to_line(&a, &b);
         println!("()()()()()()()()");
         println!("closest to line result {:?}", result);
+        println!("()()()()()()()()");
+        panic!();
+    }
+    #[test]
+    fn test_simplex_closest_to_tri() {
+        let a = MinkowPoint::new_from_v2(V2::new(-2., 0.));
+        let b = MinkowPoint::new_from_v2(V2::new(0., 2.));
+        let c = MinkowPoint::new_from_v2(V2::new(-0.5, 0.5));
+        let result = closest_to_tri([&a, &b, &c]);
+        println!("()()()()()()()()");
+        println!("closest to tri result {:?}", result);
         println!("()()()()()()()()");
         panic!();
     }
