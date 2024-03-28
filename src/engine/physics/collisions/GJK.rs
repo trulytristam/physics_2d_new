@@ -48,7 +48,6 @@ impl Simplex {
         if !self.candidate_valid(&p) {
             return GjkInstruction::Terminate(false);
         }
-
         //grow simplex
         let out = match self.minko_points.len() {
             //test
@@ -77,6 +76,7 @@ impl Simplex {
 
             _ => unreachable!("gjk has to many points: from evolve_simplex()"),
         };
+
         //find closest point on minkowdiff to origin
         //also asign new direction towards origin
         let closest = self.closest_point_to_origin();
@@ -95,7 +95,6 @@ impl Simplex {
         }
         return true;
     }
-
     fn push_arrange_clockwise(&mut self, p: MinkowPoint) {
         assert!(self.minko_points.len() == 2);
         let a = self.minko_points[0].p;
@@ -113,7 +112,6 @@ impl Simplex {
             self.minko_points.push(temp);
         }
     }
-
     ///can return None if
     fn closest_point_to_origin(&self) -> ClosestPoint {
         match self.minko_points.len() {
@@ -154,9 +152,9 @@ fn closest_to_line(a: &MinkowPoint, b: &MinkowPoint) -> ClosestPoint {
     let v = b.p - a.p;
     let v_n = v.normalize();
     let a_i = a.p * -1.;
-    let d = a_i.dot(&v_n);
+    let d = a_i.dot(&v_n) / v.magnitude();
     let inter = d;
-    let p = a.p + v_n * inter;
+    let p = a.p + v * inter;
     if inter > 0. && inter < 1. {
         ClosestPoint {
             point: p,
@@ -276,7 +274,9 @@ mod gjk_tests {
         let a = MinkowPoint::new_from_v2(V2::new(-2., 0.));
         let b = MinkowPoint::new_from_v2(V2::new(0., 2.));
         let result = closest_to_line(&a, &b);
+        println!("()()()()()()()()");
         println!("closest to line result {:?}", result);
+        println!("()()()()()()()()");
         panic!();
     }
 }
