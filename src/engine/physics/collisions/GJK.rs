@@ -27,7 +27,7 @@ enum ParentCount {
     Two((MinkowPoint, MinkowPoint), f64),
 }
 #[derive(Debug)]
-struct ClosestPoint {
+pub struct ClosestPoint {
     point: V2,
     parent: ParentCount,
 }
@@ -43,38 +43,60 @@ pub enum GjkInstruction {
     Terminate(bool),
 }
 
+#[derive(Debug)]
+pub struct EvolveResult {
+    gjk_instruction: GjkInstruction,
+    pub closest_point: Option<ClosestPoint>,
+}
+
+impl EvolveResult {
+    fn continue_() -> EvolveResult {
+        return EvolveResult {
+            gjk_instruction: GjkInstruction::Continue,
+            closest_point: None,
+        };
+    }
+    fn terminate_(is_colliding: bool, closest_point: Option<ClosestPoint>) -> EvolveResult {
+        return EvolveResult {
+            gjk_instruction: GjkInstruction::Terminate(is_colliding),
+            closest_point,
+        };
+    }
+}
+
 impl Simplex {
-    pub fn evolve_simplex(&mut self, p: MinkowPoint) -> GjkInstruction {
+    pub fn evolve_simplex(&mut self, p: MinkowPoint) -> EvolveResult {
+        let mut closest = self.closest_point_to_origin();
         if !self.candidate_valid(&p) {
-            return GjkInstruction::Terminate(false);
+            return EvolveResult::terminate_(false, closest);
         }
         //grow simplex
         let out = match self.minko_points.len() {
             //test
             0 => {
                 self.minko_points.push(p);
-                GjkInstruction::Continue
+                EvolveResult::continue_()
             }
             1 => {
                 self.minko_points.push(p);
-                GjkInstruction::Continue
+                EvolveResult::continue_()
             }
             2 => {
                 self.push_arrange_clockwise(p);
                 let shape = self.minko_points.iter().map(|p| p.p).collect();
                 if point_inside_shape(&shape, &V2::new(0., 0.)) {
-                    return GjkInstruction::Terminate(true);
+                    return EvolveResult::terminate_(true, closest);
                 }
-                GjkInstruction::Continue
+                EvolveResult::continue_()
             }
             3 => {
                 self.clean_simplex();
                 self.push_arrange_clockwise(p);
                 let shape = self.minko_points.iter().map(|p| p.p).collect();
                 if point_inside_shape(&shape, &V2::new(0., 0.)) {
-                    return GjkInstruction::Terminate(true);
+                    return EvolveResult::terminate_(true, closest);
                 }
-                GjkInstruction::Continue
+                EvolveResult::continue_()
             }
 
             _ => unreachable!("gjk has to many points: from evolve_simplex()"),
@@ -82,10 +104,10 @@ impl Simplex {
 
         //find closest point on minkowdiff to origin
         //also asign new direction towards origin
-        let closest = self.closest_point_to_origin();
-        self.dir = closest.get_new_dir();
-        if self.minko_points.len() > 0 && closest.point.magnitude() < 0.001 {
-            return GjkInstruction::Terminate(true);
+        closest = self.closest_point_to_origin();
+        self.dir = closest.as_ref().unwrap().get_new_dir();
+        if self.minko_points.len() > 0 && closest.as_ref().unwrap().point.magnitude() < 0.001 {
+            return EvolveResult::terminate_(true, closest);
         }
         return out;
     }
@@ -115,20 +137,23 @@ impl Simplex {
             self.minko_points.push(temp);
         }
     }
-    ///can return None if
-    fn closest_point_to_origin(&self) -> ClosestPoint {
+    ///returns none if trying to get closest when simple has no points
+    fn closest_point_to_origin(&self) -> Option<ClosestPoint> {
         match self.minko_points.len() {
-            1 => ClosestPoint {
+            1 => Some(ClosestPoint {
                 point: self.minko_points[0].p,
                 parent: ParentCount::One(self.minko_points[0].clone()),
-            },
-            2 => closest_to_line(&self.minko_points[0], &self.minko_points[1]),
-            3 => closest_to_tri([
+            }),
+            2 => Some(closest_to_line(
+                &self.minko_points[0],
+                &self.minko_points[1],
+            )),
+            3 => Some(closest_to_tri([
                 &self.minko_points[0],
                 &self.minko_points[1],
                 &self.minko_points[2],
-            ]),
-            _ => unreachable!("panicked because simplex has more than 3 points"),
+            ])),
+            _ => None,
         }
     }
 
@@ -208,23 +233,32 @@ fn get_minko_point(dir: V2, _a: &Collider, _b: &Collider) -> MinkowPoint {
 
 pub struct GjkResult {
     pub is_colliding: bool,
+    pub closest_point: Option<ClosestPoint>,
 }
 #[allow(unreachable_code)]
 pub fn gjk(_a: &Collider, _b: &Collider) -> GjkResult {
     let mut simp = Simplex::default();
 
-    for i in 0..100 {
+    for _ in 0..100 {
         let minkow_point = get_minko_point(simp.dir, &_a, &_b);
         let evolve_result = simp.evolve_simplex(minkow_point);
 
-        match evolve_result {
+        let closest_point = evolve_result.closest_point;
+        let gjk_instruction = evolve_result.gjk_instruction;
+        match gjk_instruction {
             GjkInstruction::Continue => continue,
-            GjkInstruction::Terminate(is_colliding) => return GjkResult { is_colliding },
+            GjkInstruction::Terminate(is_colliding) => {
+                return GjkResult {
+                    is_colliding,
+                    closest_point,
+                }
+            }
         }
     }
 
     return GjkResult {
         is_colliding: false,
+        closest_point: None,
     };
 }
 
@@ -256,7 +290,7 @@ mod gjk_tests {
         let mut s = Simplex::default();
         let a = MinkowPoint::new_from_v2(V2::new(-2., 0.));
         let b = MinkowPoint::new_from_v2(V2::new(0., 2.));
-        let c = MinkowPoint::new_from_v2(V2::new(-2., 2.));
+        let c = MinkowPoint::new_from_v2(V2::new(2., 0.));
 
         let result_a = s.evolve_simplex(a);
         println!("result a {:?}", result_a);

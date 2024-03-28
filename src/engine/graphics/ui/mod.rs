@@ -20,9 +20,9 @@ impl Ui {
         self.widjets.push(widjet);
     }
 
-    pub fn draw(&mut self, cam: &engine_camera::EngineCamera) {
+    pub fn draw(&mut self) {
         for widget in self.widjets.iter() {
-            widget.borrow().draw(cam);
+            widget.borrow().draw();
         }
     }
     pub fn set_selected_widget(&mut self, id: u32) {

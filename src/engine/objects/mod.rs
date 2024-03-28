@@ -11,7 +11,7 @@ use render_info::RenderInfo;
 pub mod physic_info;
 use physic_info::PhysicInfo;
 
-use super::engine_camera::{ConversionV2, EngineCamera};
+use super::engine_camera::{ConversionV2, EngineCamera, CAMERA};
 
 use crate::engine::objects::colliders::Circle;
 
@@ -111,15 +111,15 @@ impl Object {
         };
     }
 
-    pub fn draw(&self, cam: EngineCamera) {
+    pub fn draw(&self) {
         match &self.collider {
             Collider::Poly(p) => {
                 let mut i = 0;
                 for _ in p.points.iter() {
-                    let a = p.points[i].world_to_screen(&cam);
-                    let b = (p.points[(i + 1) % p.points.len()]).world_to_screen(&cam);
+                    let a = p.points[i].world_to_screen();
+                    let b = (p.points[(i + 1) % p.points.len()]).world_to_screen();
                     if self.info.render.fill {
-                        let p_screen = self.info.physic.pos.world_to_screen(&cam);
+                        let p_screen = self.info.physic.pos.world_to_screen();
                         macroquad::shapes::draw_triangle(
                             a.into_vec2(),
                             b.into_vec2(),
@@ -139,7 +139,7 @@ impl Object {
                     i += 1;
                 }
 
-                let center = self.info.physic.pos.world_to_screen(&cam);
+                let center = self.info.physic.pos.world_to_screen();
                 draw_circle(
                     center.x as f32,
                     center.y as f32,
@@ -149,7 +149,8 @@ impl Object {
             }
             Collider::Circle(_) => {
                 let o = &self.info.physic;
-                let np = o.pos.world_to_screen(&cam);
+                let np = o.pos.world_to_screen();
+                let cam = CAMERA.lock().unwrap();
                 macroquad::shapes::draw_circle(
                     np.x as f32,
                     np.y as f32,

@@ -2,14 +2,25 @@ use super::Object;
 use macroquad::prelude::*;
 use nalgebra::{self};
 type V2 = nalgebra::Vector2<f64>;
+use lazy_static::lazy_static;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::Mutex;
 type MP<T> = Rc<RefCell<T>>;
 
 #[derive(Clone)]
 pub struct EngineCamera {
     pub pos: V2,
     pub scale: f64,
+}
+lazy_static! {
+    pub static ref CAMERA: Mutex<EngineCamera> = Mutex::new(EngineCamera {
+        pos: V2::new(
+            macroquad::prelude::screen_width() as f64 / -2.,
+            macroquad::prelude::screen_height() as f64 / -2.,
+        ),
+        scale: 1.0
+    });
 }
 impl Default for EngineCamera {
     fn default() -> Self {
@@ -24,8 +35,8 @@ impl Default for EngineCamera {
 }
 
 pub trait ConversionV2 {
-    fn screen_to_world(&self, cam: &EngineCamera) -> Self;
-    fn world_to_screen(&self, cam: &EngineCamera) -> Self;
+    fn screen_to_world(&self) -> Self;
+    fn world_to_screen(&self) -> Self;
     fn into_vec2(&self) -> Vec2;
     fn local_to_world(&self, object: MP<Object>) -> V2;
     fn world_to_local(&self, object: MP<Object>) -> V2;
@@ -35,10 +46,12 @@ pub trait Conversionf32f32 {
 }
 
 impl ConversionV2 for V2 {
-    fn screen_to_world(&self, cam: &EngineCamera) -> Self {
+    fn screen_to_world(&self) -> Self {
+        let cam = CAMERA.lock().unwrap();
         self / cam.scale + cam.pos
     }
-    fn world_to_screen(&self, cam: &EngineCamera) -> Self {
+    fn world_to_screen(&self) -> Self {
+        let cam = CAMERA.lock().unwrap();
         (self - cam.pos) * cam.scale
     }
     fn into_vec2(&self) -> Vec2 {

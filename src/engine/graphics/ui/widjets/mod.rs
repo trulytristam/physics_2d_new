@@ -35,7 +35,7 @@ impl WidjetInfo {
 }
 
 pub trait Widjet {
-    fn draw(&self, cam: &EngineCamera);
+    fn draw(&self);
     fn on_press(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>);
     fn on_hold(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>);
     fn on_release(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>);

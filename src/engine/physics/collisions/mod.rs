@@ -1,5 +1,6 @@
 pub mod gjk;
 
+use macroquad::color;
 use macroquad::experimental::camera::mouse::Camera;
 use macroquad::miniquad::RenderingBackend;
 
@@ -20,7 +21,7 @@ pub enum CollisionDetectionAlgo {
 
 #[derive(Default, Clone)]
 pub struct EngineCollisionInfo {
-    pairs: Vec<Manifold>,
+    pub pairs: Vec<Manifold>,
 }
 
 impl EngineCollisionInfo {
@@ -38,6 +39,20 @@ impl EngineCollisionInfo {
                     &object_a.clone().borrow().collider,
                     &object_b.clone().borrow().collider,
                 );
+
+                //display info
+                let col = if gjk_result.is_colliding {
+                    color::GREEN
+                } else {
+                    color::RED
+                };
+                if gjk_result.closest_point.is_some() {
+                    let n = gjk_result.closest_point.unwrap();
+                    let text = format!("{:?}", n);
+                    let text = text.as_str();
+                    DEBBUGER.draw_text(text, V2::new(40., 20.), col);
+                }
+                //---------
                 if gjk_result.is_colliding {
                     let m = Manifold {
                         a: object_a.clone(),
@@ -51,10 +66,10 @@ impl EngineCollisionInfo {
         }
     }
 
-    pub fn draw_pairs(&self, cam: &EngineCamera) {
+    pub fn draw_pairs(&self) {
         for pair in self.pairs.iter() {
-            let a = pair.a.borrow().info.physic.pos.world_to_screen(cam);
-            let b = pair.a.borrow().info.physic.pos.world_to_screen(cam);
+            let a = pair.a.borrow().info.physic.pos.world_to_screen();
+            let b = pair.a.borrow().info.physic.pos.world_to_screen();
             DEBBUGER.draw_arrow(a, b, macroquad::prelude::RED);
         }
     }

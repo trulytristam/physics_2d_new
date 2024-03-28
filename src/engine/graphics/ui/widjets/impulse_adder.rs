@@ -3,7 +3,7 @@ use std::rc::Rc;
 use super::{UpdateInfo, Widjet, WidjetInfo};
 use crate::engine::{
     debugger::{Debg, DebugColor, DEBBUGER},
-    engine_camera::{ConversionV2, EngineCamera},
+    engine_camera::{ConversionV2, EngineCamera, CAMERA},
     objects::{Object, MP, V2},
 };
 use macroquad::prelude::*;
@@ -17,10 +17,10 @@ pub struct ImpulseAdder {
 
 #[allow(unused_variables)]
 impl Widjet for ImpulseAdder {
-    fn draw(&self, cam: &EngineCamera) {
+    fn draw(&self) {
         let a = self.point_local.local_to_world(self.object.clone());
-        let a = a.world_to_screen(&cam).into_vec2();
-        let b = self.point_mouse.world_to_screen(&cam).into_vec2();
+        let a = a.world_to_screen().into_vec2();
+        let b = self.point_mouse.world_to_screen().into_vec2();
         draw_line(a.x, a.y, b.x, b.y, 3., WHITE);
     }
 

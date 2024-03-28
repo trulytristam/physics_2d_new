@@ -101,7 +101,7 @@ impl Debg for Mutex<Debugger> {
         let text = text.to_owned();
         let pos = pos_screen.to_owned();
         g.add_callback(Arc::new(move || {
-            prelude::draw_text(&text, pos.x as f32, pos.y as f32, 40., col);
+            prelude::draw_text(&text, pos.x as f32, pos.y as f32, 20., col);
         }));
     }
 

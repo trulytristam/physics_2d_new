@@ -3,7 +3,6 @@ pub struct Engine {
     engine_time: EngineTime,
     engine_physics_info: EnginePhysicsInfo,
     ui: ui::Ui,
-    camera: EngineCamera,
 }
 
 impl Engine {
@@ -36,7 +35,6 @@ impl Engine {
             ],
             engine_time: EngineTime::default(),
             engine_physics_info: EnginePhysicsInfo::default(),
-            camera: EngineCamera::default(),
             ui: ui::Ui::default(),
         }
     }
@@ -62,10 +60,19 @@ impl Engine {
             ._collisions
             .generate_pairs(&self.objects);
 
-        let n = self.engine_physics_info._collisions.count_pairs();
-        let text = format!("number of pairs {}", n);
-        let text = text.as_str();
-        DEBBUGER.draw_text(text, V2::new(40., 40.), macroquad::color::RED);
+        for pair in self.engine_physics_info._collisions.pairs.iter() {
+            let a = pair.a.borrow().info.physic.pos;
+            let b = pair.b.borrow().info.physic.pos;
+            DEBBUGER.draw_arrow(
+                a.world_to_screen(),
+                b.world_to_screen(),
+                macroquad::prelude::WHITE,
+            );
+            let n = self.engine_physics_info._collisions.count_pairs();
+            let text = format!("number of pairs {}", n);
+            let text = text.as_str();
+            DEBBUGER.draw_text(text, V2::new(40., 40.), macroquad::color::RED);
+        }
     }
 
     fn user_input(&mut self) {
@@ -87,18 +94,16 @@ impl Engine {
     fn get_mouse_world(&self) -> V2 {
         let mouse = macroquad::input::mouse_position()
             .into_v2()
-            .screen_to_world(&self.camera);
+            .screen_to_world();
         return mouse;
     }
     fn draw(&mut self) {
         macroquad::prelude::clear_background(macroquad::color::BLACK);
         for object in self.objects.iter() {
-            object.borrow_mut().draw(self.camera.clone());
+            object.borrow_mut().draw();
         }
-        self.ui.draw(&self.camera);
-        self.engine_physics_info
-            ._collisions
-            .draw_pairs(&self.camera);
+        self.ui.draw();
+        self.engine_physics_info._collisions.draw_pairs();
         DEBBUGER.draw();
     }
 }
@@ -129,7 +134,7 @@ fn if_space_held(engine: &mut Engine) {
             ImpulseAdderInfo {
             mouse: macroquad::input::mouse_position()
                 .into_v2()
-                .screen_to_world(&engine.camera),
+                .screen_to_world(),
         }));
     }
     // todo!();
@@ -139,7 +144,7 @@ fn if_space_released(engine: &mut Engine) {
         engine.ui.release_selected_widget(Rc::new(ImpulseAdderInfo {
             mouse: macroquad::input::mouse_position()
                 .into_v2()
-                .screen_to_world(&engine.camera),
+                .screen_to_world(),
         }));
     }
 }
@@ -163,7 +168,6 @@ use objects::{Object, MP, V2};
 
 mod physics;
 pub use physics::collisions;
-use physics::collisions::CollisionDetectionAlgo;
 
 mod engine_time;
 use engine_time::EngineTime;
