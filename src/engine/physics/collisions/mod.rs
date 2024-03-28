@@ -30,6 +30,7 @@ impl EngineCollisionInfo {
         if objects.len() < 2 {
             return;
         }
+        //testsing
         for a in 0..(objects.len() - 1) {
             let object_a = &objects[a];
             for b in (a + 1)..objects.len() {
