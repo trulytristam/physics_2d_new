@@ -31,6 +31,7 @@ impl EngineCollisionInfo {
             return;
         }
         //testsing
+        //stash change
         for a in 0..(objects.len() - 1) {
             let object_a = &objects[a];
             for b in (a + 1)..objects.len() {

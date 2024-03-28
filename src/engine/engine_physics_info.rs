@@ -1,5 +1,6 @@
 use super::physics::collisions::EngineCollisionInfo;
 
+///All info pertaining to the physics part of the engine
 #[derive(Clone)]
 pub struct EnginePhysicsInfo {
     pub _gravity: f64,
