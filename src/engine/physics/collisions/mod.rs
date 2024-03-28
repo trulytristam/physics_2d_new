@@ -47,10 +47,15 @@ impl EngineCollisionInfo {
                     color::RED
                 };
                 if gjk_result.closest_point.is_some() {
-                    let n = gjk_result.closest_point.unwrap();
-                    let text = format!("{:?}", n);
-                    let text = text.as_str();
-                    DEBBUGER.draw_text(text, V2::new(40., 20.), col);
+                    let n = gjk_result.closest_point.unwrap().closest_on_shapes(
+                        &object_a.clone().borrow().collider,
+                        &object_b.clone().borrow().collider,
+                    );
+                    let a_p = n.0;
+                    let b_p = n.1;
+                    // println!("points: {:?}", n);
+                    DEBBUGER.draw_dot(a_p.world_to_screen(), col);
+                    DEBBUGER.draw_dot(b_p.world_to_screen(), col);
                 }
                 //---------
                 if gjk_result.is_colliding {

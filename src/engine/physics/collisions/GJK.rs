@@ -35,6 +35,27 @@ impl ClosestPoint {
     fn get_new_dir(&self) -> V2 {
         (self.point * -1.).normalize()
     }
+
+    pub fn closest_on_shapes(&self, _a: &Collider, _b: &Collider) -> (V2, V2) {
+        match &self.parent {
+            ParentCount::One(p) => {
+                let a = _a.get_point(p.p, p.a);
+                let b = _b.get_point(p.p, p.b);
+                return (a, b);
+            }
+            ParentCount::Two((p1, p2), inter) => {
+                let a1 = _a.get_point(p1.p, p1.a);
+                let a2 = _a.get_point(p2.p, p2.a);
+                let b1 = _b.get_point(p1.p, p1.b);
+                let b2 = _b.get_point(p2.p, p2.b);
+
+                return (interpolate(a1, a2, *inter), interpolate(b1, b2, *inter));
+            }
+        }
+    }
+}
+fn interpolate(a: V2, b: V2, inter: f64) -> V2 {
+    return a + (b - a) * inter;
 }
 ///bool in terminate represents if collision present
 #[derive(Debug)]

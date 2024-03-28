@@ -56,6 +56,15 @@ impl Collider {
             Collider::Circle(c) => c.point_inside(point),
         }
     }
+    pub fn get_point(&self, point: V2, i: Option<usize>) -> V2 {
+        match i {
+            Some(i) => match self {
+                Collider::Poly(poly) => poly.points[i],
+                Collider::Circle(circe) => point,
+            },
+            None => point,
+        }
+    }
 
     pub fn get_support(&self, dir_unit: &V2) -> SupportInfo {
         match self {
