@@ -76,6 +76,9 @@ impl ConversionV2 for V2 {
 
 impl Conversionf32f32 for (f32, f32) {
     fn into_v2(&self) -> V2 {
-        return V2::new(self.0 as f64, self.1 as f64);
+        return V2::new(
+            self.0 as f64,
+            self.1 as f64,
+        );
     }
 }

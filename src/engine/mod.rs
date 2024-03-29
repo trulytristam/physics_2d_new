@@ -23,7 +23,10 @@ impl Engine {
                 ])
                 .borrow_mut()
                 .offset_local_data(V2::new(0., -0.57))
-                .translated(V2::new(100., 0.), 1.),
+                .translated(
+                    V2::new(100., 0.),
+                    1.,
+                ),
                 Object::new_poly_from_vec(vec![
                     V2::new(-1., 1.),
                     V2::new(0., 2.),
@@ -32,7 +35,10 @@ impl Engine {
                 ])
                 .borrow_mut()
                 .offset_local_data(V2::new(0., -0.57))
-                .translated(V2::new(-100., 0.), 1.),
+                .translated(
+                    V2::new(-100., 0.),
+                    1.,
+                ),
             ],
             selected_obejct: 0,
             engine_time: EngineTime::default(),
@@ -55,26 +61,35 @@ impl Engine {
         self.ui.update();
         self.handle_selected_object();
         for object in self.objects.iter_mut() {
-            object
-                .borrow_mut()
-                .update(self.engine_time.clone(), self.engine_physics_info.clone());
+            object.borrow_mut().update(
+                self.engine_time.clone(),
+                self.engine_physics_info.clone(),
+            );
         }
         self.engine_physics_info
             ._collisions
             .generate_pairs(&self.objects);
 
-        for pair in self.engine_physics_info._collisions.pairs.iter() {
-            let a = pair.a.borrow().info.physic.pos;
-            let b = pair.b.borrow().info.physic.pos;
-            DEBBUGER.draw_arrow(
-                a.world_to_screen(),
-                b.world_to_screen(),
-                macroquad::prelude::WHITE,
+        for pair in self
+            .engine_physics_info
+            ._collisions
+            .pairs
+            .iter()
+        {
+            let n = self
+                .engine_physics_info
+                ._collisions
+                .count_pairs();
+            let text = format!(
+                "number of pairs {}",
+                n
             );
-            let n = self.engine_physics_info._collisions.count_pairs();
-            let text = format!("number of pairs {}", n);
             let text = text.as_str();
-            DEBBUGER.draw_text(text, V2::new(40., 40.), macroquad::color::RED);
+            DEBBUGER.draw_text(
+                text,
+                V2::new(40., 40.),
+                macroquad::color::RED,
+            );
         }
     }
 
@@ -101,28 +116,48 @@ impl Engine {
             let o = o.unwrap();
             use macroquad::input::KeyCode::{Down, Left, Right, Space, Up, A, D, S, W};
             let move_o = |v: V2| {
-                o.borrow_mut().info.physic.kill_momentum();
-                o.borrow_mut().info.physic.pos +=
-                    v * self.engine_time.time_last_frame.as_secs_f64();
+                o.borrow_mut()
+                    .info
+                    .physic
+                    .kill_momentum();
+                o.borrow_mut().info.physic.pos += v * self
+                    .engine_time
+                    .time_last_frame
+                    .as_secs_f64();
             };
             let rot_o = |a: f64| {
-                o.borrow_mut().info.physic.kill_momentum();
-                o.borrow_mut().info.physic.ang +=
-                    a * self.engine_time.time_last_frame.as_secs_f64();
+                o.borrow_mut()
+                    .info
+                    .physic
+                    .kill_momentum();
+                o.borrow_mut().info.physic.ang += a * self
+                    .engine_time
+                    .time_last_frame
+                    .as_secs_f64();
             };
             for k in macroquad::prelude::get_keys_down() {
                 match k {
                     W => {
-                        move_o(V2::new(0., -move_speed));
+                        move_o(V2::new(
+                            0.,
+                            -move_speed,
+                        ));
                     }
                     A => {
-                        move_o(V2::new(-move_speed, -0.));
+                        move_o(V2::new(
+                            -move_speed,
+                            -0.,
+                        ));
                     }
                     S => {
-                        move_o(V2::new(0., move_speed));
+                        move_o(V2::new(
+                            0., move_speed,
+                        ));
                     }
                     D => {
-                        move_o(V2::new(move_speed, 0.));
+                        move_o(V2::new(
+                            move_speed, 0.,
+                        ));
                     }
                     Up => {}
                     Down => {}
@@ -147,15 +182,19 @@ impl Engine {
         let mouse = macroquad::input::mouse_position()
             .into_v2()
             .screen_to_world();
+
         return mouse;
     }
+
     fn draw(&mut self) {
-        macroquad::prelude::clear_background(macroquad::color::BLACK);
+        macroquad::prelude::clear_background(macroquad::color::BEIGE);
         for object in self.objects.iter() {
             object.borrow_mut().draw();
         }
         self.ui.draw();
-        self.engine_physics_info._collisions.draw_pairs();
+        self.engine_physics_info
+            ._collisions
+            .draw_pairs();
         DEBBUGER.draw();
     }
 }
@@ -166,16 +205,18 @@ fn if_space_pressed(engine: &mut Engine) {
 
         let new_widget_id = engine.ui.widjets_info.new_widget_id();
         if let Some(object) = object {
-            engine
-                .ui
-                .add_widget(std::rc::Rc::new(RefCell::new(ImpulseAdder::new(
+            engine.ui.add_widget(std::rc::Rc::new(
+                RefCell::new(ImpulseAdder::new(
                     object,
                     engine.get_mouse_world(),
                     new_widget_id,
-                ))));
+                )),
+            ));
         }
 
-        engine.ui.set_selected_widget(new_widget_id);
+        engine
+            .ui
+            .set_selected_widget(new_widget_id);
     }
 }
 
@@ -193,11 +234,15 @@ fn if_space_held(engine: &mut Engine) {
 }
 fn if_space_released(engine: &mut Engine) {
     if macroquad::input::is_key_released(macroquad::input::KeyCode::Space) {
-        engine.ui.release_selected_widget(Rc::new(ImpulseAdderInfo {
-            mouse: macroquad::input::mouse_position()
-                .into_v2()
-                .screen_to_world(),
-        }));
+        engine
+            .ui
+            .release_selected_widget(Rc::new(
+                ImpulseAdderInfo {
+                    mouse: macroquad::input::mouse_position()
+                        .into_v2()
+                        .screen_to_world(),
+                },
+            ));
     }
 }
 
@@ -218,7 +263,7 @@ use debugger::DEBBUGER;
 mod objects;
 use objects::{Object, MP, V2};
 
-mod physics;
+pub mod physics;
 pub use physics::collisions;
 
 mod engine_time;

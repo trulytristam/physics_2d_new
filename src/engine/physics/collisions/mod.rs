@@ -1,11 +1,9 @@
 pub mod gjk;
 
-use macroquad::color;
-use macroquad::experimental::camera::mouse::Camera;
-use macroquad::miniquad::RenderingBackend;
+use macroquad::prelude;
 
 use crate::engine::debugger::Debg;
-use crate::engine::engine_camera::{ConversionV2, EngineCamera};
+use crate::engine::engine_camera::ConversionV2;
 use crate::engine::objects::colliders::Manifold;
 use crate::engine::objects::{MP, V2};
 pub mod helper_functions;
@@ -30,34 +28,48 @@ impl EngineCollisionInfo {
         if objects.len() < 2 {
             return;
         }
-        //testsing
-        //stash change
         for a in 0..(objects.len() - 1) {
             let object_a = &objects[a];
             for b in (a + 1)..objects.len() {
                 let object_b = &objects[b];
 
+                //Gjk
                 let gjk_result = gjk(
                     &object_a.clone().borrow().collider,
                     &object_b.clone().borrow().collider,
                 );
 
-                //display info
-                let col = if gjk_result.is_colliding {
-                    color::GREEN
-                } else {
-                    color::RED
-                };
+                //DEBUG Simplex
+                gjk_result.simplex.draw(
+                    &object_a.borrow_mut().collider,
+                    &object_b.borrow_mut().collider,
+                );
+
+                //Draw origin
+                DEBBUGER.draw_dot(
+                    V2::new(0., 0.).world_to_screen(),
+                    macroquad::color::WHITE,
+                );
+
                 if gjk_result.closest_point.is_some() {
-                    let n = gjk_result.closest_point.unwrap().closest_on_shapes(
-                        &object_a.clone().borrow().collider,
-                        &object_b.clone().borrow().collider,
-                    );
+                    let n = gjk_result
+                        .closest_point
+                        .unwrap()
+                        .closest_on_shapes(
+                            &object_a.clone().borrow().collider,
+                            &object_b.clone().borrow().collider,
+                        );
                     let a_p = n.0;
                     let b_p = n.1;
                     // println!("points: {:?}", n);
-                    DEBBUGER.draw_dot(a_p.world_to_screen(), col);
-                    DEBBUGER.draw_dot(b_p.world_to_screen(), col);
+                    // DEBBUGER.draw_dot(
+                    //     a_p.world_to_screen(),
+                    //     prelude::BLACK,
+                    // );
+                    // DEBBUGER.draw_dot(
+                    //     b_p.world_to_screen(),
+                    //     prelude::BLACK,
+                    // );
                 }
                 //---------
                 if gjk_result.is_colliding {
@@ -75,9 +87,21 @@ impl EngineCollisionInfo {
 
     pub fn draw_pairs(&self) {
         for pair in self.pairs.iter() {
-            let a = pair.a.borrow().info.physic.pos.world_to_screen();
-            let b = pair.a.borrow().info.physic.pos.world_to_screen();
-            DEBBUGER.draw_arrow(a, b, macroquad::prelude::RED);
+            let a = pair
+                .a
+                .borrow()
+                .info
+                .physic
+                .pos
+                .world_to_screen();
+            let b = pair
+                .a
+                .borrow()
+                .info
+                .physic
+                .pos
+                .world_to_screen();
+            // DEBBUGER.draw_arrow(a, b, macroquad::prelude::RED);
         }
     }
     pub fn count_pairs(&self) -> usize {

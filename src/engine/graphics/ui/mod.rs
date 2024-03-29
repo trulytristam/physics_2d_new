@@ -13,7 +13,8 @@ impl Ui {
     }
 
     pub fn delete_flagged_widgets(&mut self) {
-        self.widjets.retain(|e| !e.borrow_mut().get_delete());
+        self.widjets
+            .retain(|e| !e.borrow_mut().get_delete());
     }
 
     pub fn add_widget(&mut self, widjet: Rc<RefCell<dyn Widjet>>) {
@@ -39,7 +40,8 @@ impl Ui {
                 // } else {
                 //     DEBBUGER.lock().unwrap().draw_box(DebugColor::RED);
                 // }
-                w.borrow_mut().on_hold(info.clone(), None)
+                w.borrow_mut()
+                    .on_hold(info.clone(), None)
             }
         }
     }
@@ -50,7 +52,8 @@ impl Ui {
                 && self.widjets_info.widget_selected != 0
             {
                 // DEBBUGER.draw_box(macroquad::prelude::RED);
-                w.borrow_mut().on_release(info.clone(), None)
+                w.borrow_mut()
+                    .on_release(info.clone(), None)
             }
         }
     }

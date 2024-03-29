@@ -9,7 +9,7 @@ pub struct RenderInfo {
 impl RenderInfo {
     pub fn default() -> Self {
         RenderInfo {
-            fill_color: RED,
+            fill_color: macroquad::color::BLANK,
             line_color: WHITE,
             show_vert: true,
             fill: true,

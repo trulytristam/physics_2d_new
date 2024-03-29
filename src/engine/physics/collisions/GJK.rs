@@ -1,6 +1,11 @@
 #![allow(dead_code)]
+
+use crate::engine::debugger::{Debg, DEBBUGER};
+use crate::engine::engine_camera::ConversionV2;
 use crate::engine::helper_functions::{gen_perp_matrix, point_inside_shape};
+use crate::engine::objects::colliders::Poly;
 use crate::engine::objects::{colliders::Collider, V2};
+use macroquad::color::{BLUE, GREEN, RED};
 use macroquad::prelude::rand;
 
 #[derive(Debug)]
@@ -14,6 +19,8 @@ impl Default for Simplex {
     fn default() -> Self {
         let x: f64 = rand::gen_range(-1., 1.);
         let y: f64 = rand::gen_range(-1., 1.);
+        let x = 1.;
+        let y = 1.;
         Simplex {
             minko_points: Vec::new(),
             dir: V2::new(x, y).normalize(),
@@ -26,7 +33,13 @@ impl Default for Simplex {
 #[derive(Debug)]
 enum ParentCount {
     One(MinkowPoint),
-    Two((MinkowPoint, MinkowPoint), f64),
+    Two(
+        (
+            MinkowPoint,
+            MinkowPoint,
+        ),
+        f64,
+    ),
 }
 #[derive(Debug)]
 pub struct ClosestPoint {
@@ -51,7 +64,10 @@ impl ClosestPoint {
                 let b1 = _b.get_point(p1.p, p1.b);
                 let b2 = _b.get_point(p2.p, p2.b);
 
-                return (interpolate(a1, a2, *inter), interpolate(b1, b2, *inter));
+                return (
+                    interpolate(a1, a2, *inter),
+                    interpolate(b1, b2, *inter),
+                );
             }
         }
     }
@@ -88,6 +104,41 @@ impl EvolveResult {
 }
 
 impl Simplex {
+    pub fn draw(&self, _a: &Collider, _b: &Collider) {
+        let colors = vec![
+            macroquad::prelude::RED,
+            macroquad::prelude::GREEN,
+            macroquad::prelude::BLUE,
+        ];
+        DEBBUGER.draw_poly(
+            self.minko_points
+                .iter()
+                .map(|p| p.p)
+                .collect(),
+            Some(&colors),
+            macroquad::prelude::BLACK,
+        );
+        // draw points on colliders
+        match (_a, _b) {
+            (Collider::Poly(pa), Collider::Poly(pb)) => {
+                let mut i = 0;
+                for p in self.minko_points.iter() {
+                    let a = pa.points[p.a.unwrap()];
+                    let b = pb.points[p.b.unwrap()];
+                    DEBBUGER.draw_dot(
+                        a.world_to_screen(),
+                        colors[i],
+                    );
+                    DEBBUGER.draw_dot(
+                        b.world_to_screen(),
+                        colors[i],
+                    );
+                    i += 1;
+                }
+            }
+            (..) => (),
+        }
+    }
     pub fn evolve_simplex(&mut self, p: MinkowPoint) -> EvolveResult {
         let mut closest = self.closest_point_to_origin();
         if !self.candidate_valid(&p) {
@@ -109,20 +160,34 @@ impl Simplex {
             }
             2 => {
                 self.push_arrange_clockwise(p);
-                let shape = self.minko_points.iter().map(|p| p.p).collect();
-                if point_inside_shape(&shape, &V2::new(0., 0.)) {
+                let shape = self
+                    .minko_points
+                    .iter()
+                    .map(|p| p.p)
+                    .collect();
+                if point_inside_shape(
+                    &shape,
+                    &V2::new(0., 0.),
+                ) {
                     self.collision_found = true;
-                    return EvolveResult::continue_();
+                    return EvolveResult::terminate_(true, closest);
                 }
                 EvolveResult::continue_()
             }
             3 => {
                 self.clean_simplex();
                 self.push_arrange_clockwise(p);
-                let shape = self.minko_points.iter().map(|p| p.p).collect();
-                if point_inside_shape(&shape, &V2::new(0., 0.)) {
+                let shape = self
+                    .minko_points
+                    .iter()
+                    .map(|p| p.p)
+                    .collect();
+                if point_inside_shape(
+                    &shape,
+                    &V2::new(0., 0.),
+                ) {
                     self.collision_found = true;
-                    return EvolveResult::continue_();
+                    return EvolveResult::terminate_(true, closest);
                 }
                 EvolveResult::continue_()
             }
@@ -134,11 +199,20 @@ impl Simplex {
         //also asign new direction towards origin
         closest = self.closest_point_to_origin();
         self.dir = closest.as_ref().unwrap().get_new_dir();
-        if self.minko_points.len() > 0 && closest.as_ref().unwrap().point.magnitude() < 0.001 {
+        if self.minko_points.len() > 0
+            && closest
+                .as_ref()
+                .unwrap()
+                .point
+                .magnitude()
+                < 0.001
+        {
+            self.collision_found = true;
             return EvolveResult::terminate_(true, closest);
         }
         return out;
     }
+
     fn candidate_valid(&self, candidate: &MinkowPoint) -> bool {
         let delta = 0.00001;
         for p in self.minko_points.iter() {
@@ -217,9 +291,12 @@ fn closest_to_line(a: &MinkowPoint, b: &MinkowPoint) -> ClosestPoint {
     if inter > 0. && inter < 1. {
         ClosestPoint {
             point: p,
-            parent: ParentCount::Two((a.clone(), b.clone()), inter),
+            parent: ParentCount::Two(
+                (a.clone(), b.clone()),
+                inter,
+            ),
         }
-    } else if inter < 0. {
+    } else if inter <= 0. {
         ClosestPoint {
             point: a.p.clone(),
             parent: ParentCount::One(a.clone()),
@@ -262,23 +339,23 @@ fn get_minko_point(dir: V2, _a: &Collider, _b: &Collider) -> MinkowPoint {
 pub struct GjkResult {
     pub is_colliding: bool,
     pub closest_point: Option<ClosestPoint>,
+    pub simplex: Simplex,
 }
 #[allow(unreachable_code)]
 pub fn gjk(_a: &Collider, _b: &Collider) -> GjkResult {
     let mut simp = Simplex::default();
 
-    for _ in 0..100 {
+    for _ in 0..1000 {
         let minkow_point = get_minko_point(simp.dir, &_a, &_b);
         let evolve_result = simp.evolve_simplex(minkow_point);
-
-        let closest_point = evolve_result.closest_point;
         let gjk_instruction = evolve_result.gjk_instruction;
         match gjk_instruction {
             GjkInstruction::Continue => continue,
             GjkInstruction::Terminate(is_colliding) => {
                 return GjkResult {
                     is_colliding,
-                    closest_point,
+                    closest_point: evolve_result.closest_point,
+                    simplex: simp,
                 }
             }
         }
@@ -287,9 +364,11 @@ pub fn gjk(_a: &Collider, _b: &Collider) -> GjkResult {
     return GjkResult {
         is_colliding: false,
         closest_point: None,
+        simplex: simp,
     };
 }
 
+///MinkowPoint is in world space
 #[derive(Debug, Clone)]
 pub struct MinkowPoint {
     p: V2,
@@ -321,19 +400,40 @@ mod gjk_tests {
         let c = MinkowPoint::new_from_v2(V2::new(2., 0.));
 
         let result_a = s.evolve_simplex(a);
-        println!("result a {:?}", result_a);
-        println!("new dir a {:?}\n", s.dir);
+        println!(
+            "result a {:?}",
+            result_a
+        );
+        println!(
+            "new dir a {:?}\n",
+            s.dir
+        );
         let result_b = s.evolve_simplex(b);
-        println!("result b {:?}", result_b);
-        println!("new dir b {:?} \n", s.dir);
+        println!(
+            "result b {:?}",
+            result_b
+        );
+        println!(
+            "new dir b {:?} \n",
+            s.dir
+        );
         let result_c = s.evolve_simplex(c);
-        println!("result c {:?}", result_c);
-        println!("new dir c {:?} \n", s.dir);
+        println!(
+            "result c {:?}",
+            result_c
+        );
+        println!(
+            "new dir c {:?} \n",
+            s.dir
+        );
 
         //-----------------
         let d = MinkowPoint::new_from_v2(V2::new(2., -2.));
         let result_d = s.evolve_simplex(d);
-        println!("result d {:?}", result_d);
+        println!(
+            "result d {:?}",
+            result_d
+        );
 
         println!("simplex: {:?}", s);
         panic!();
@@ -345,7 +445,10 @@ mod gjk_tests {
         let b = MinkowPoint::new_from_v2(V2::new(0., 2.));
         let result = closest_to_line(&a, &b);
         println!("()()()()()()()()");
-        println!("closest to line result {:?}", result);
+        println!(
+            "closest to line result {:?}",
+            result
+        );
         println!("()()()()()()()()");
         panic!();
     }
@@ -356,7 +459,10 @@ mod gjk_tests {
         let c = MinkowPoint::new_from_v2(V2::new(-0.5, 0.5));
         let result = closest_to_tri([&a, &b, &c]);
         println!("()()()()()()()()");
-        println!("closest to tri result {:?}", result);
+        println!(
+            "closest to tri result {:?}",
+            result
+        );
         println!("()()()()()()()()");
         panic!();
     }

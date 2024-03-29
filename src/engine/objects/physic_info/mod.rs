@@ -1,5 +1,7 @@
 use nalgebra::{self};
 
+use crate::engine::helper_functions::gen_perp_matrix;
+
 type V2 = nalgebra::Vector2<f64>;
 
 #[derive(Clone)]
@@ -26,6 +28,10 @@ impl Default for PhysicInfo {
 }
 
 impl PhysicInfo {
+    pub fn get_linear_vel_at_point(&self, p: &V2) -> V2 {
+        let perp = gen_perp_matrix() * (p - self.pos) * -1.;
+        return self.vel + perp * self.w;
+    }
     pub fn apply_impulse(&mut self, point_world: V2, force: V2) {
         let r = point_world - self.pos;
         let mut dir = 1.;

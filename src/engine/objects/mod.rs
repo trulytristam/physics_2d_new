@@ -60,8 +60,15 @@ impl Object {
         if self.info.physic.pos.magnitude() > 500. {
             self.info.physic = PhysicInfo::default();
         }
-        self.integrate(_engine_time, _engine_physics_info);
+        self.integrate(
+            _engine_time,
+            _engine_physics_info,
+        );
         self.generate_collider();
+    }
+    pub fn get_linear_vel_at_point(&self, point: &V2) -> V2 {
+        let s = &self.info.physic;
+        return s.get_linear_vel_at_point(point);
     }
     pub fn offset_local_data(&mut self, offset: V2) -> &Self {
         let mut temp: Vec<V2> = vec![];
@@ -89,8 +96,14 @@ impl Object {
 
     fn integrate(&mut self, _engine_time: EngineTime, _engine_physics_info: EnginePhysicsInfo) {
         let o = &mut self.info.physic;
-        o.pos += o.vel * _engine_time.time_last_frame.as_secs_f64();
-        o.ang += o.w * _engine_time.time_last_frame.as_secs_f64();
+        o.pos += o.vel
+            * _engine_time
+                .time_last_frame
+                .as_secs_f64();
+        o.ang += o.w
+            * _engine_time
+                .time_last_frame
+                .as_secs_f64();
     }
     fn generate_collider(&mut self) {
         self.collider = match &self.collider {

@@ -6,9 +6,6 @@ mod tests {
     // A test function
     #[test]
     fn test_push_rearrange() {
-        
         let s = Simplex::default();
-
-        
     }
 }

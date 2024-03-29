@@ -56,6 +56,7 @@ impl Collider {
             Collider::Circle(c) => c.point_inside(point),
         }
     }
+    ///Get point in collider at index i
     pub fn get_point(&self, point: V2, i: Option<usize>) -> V2 {
         match i {
             Some(i) => match self {

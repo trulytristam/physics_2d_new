@@ -18,30 +18,48 @@ pub struct ImpulseAdder {
 #[allow(unused_variables)]
 impl Widjet for ImpulseAdder {
     fn draw(&self) {
-        let a = self.point_local.local_to_world(self.object.clone());
+        let a = self
+            .point_local
+            .local_to_world(self.object.clone());
         let a = a.world_to_screen().into_vec2();
-        let b = self.point_mouse.world_to_screen().into_vec2();
-        draw_line(a.x, a.y, b.x, b.y, 3., WHITE);
+        let b = self
+            .point_mouse
+            .world_to_screen()
+            .into_vec2();
+        draw_line(
+            a.x, a.y, b.x, b.y, 3., WHITE,
+        );
     }
 
     fn on_press(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>) {}
     fn on_hold(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>) {
         let info_data = info.to_vec();
         if info_data.len() > 0 {
-            self.point_mouse = V2::new(info_data[0], info_data[1]);
+            self.point_mouse = V2::new(
+                info_data[0],
+                info_data[1],
+            );
         }
     }
     fn on_release(&mut self, info: Rc<dyn UpdateInfo>, callback: Option<fn() -> ()>) {
         if let Some(c) = callback {
             c();
         } else {
-            let force = self.point_mouse - self.point_local.local_to_world(self.object.clone());
-            let applied_point = self.point_local.local_to_world(self.object.clone());
+            let force = self.point_mouse
+                - self
+                    .point_local
+                    .local_to_world(self.object.clone());
+            let applied_point = self
+                .point_local
+                .local_to_world(self.object.clone());
             (*self.object)
                 .borrow_mut()
                 .info
                 .physic
-                .apply_impulse(applied_point, force * 3.);
+                .apply_impulse(
+                    applied_point,
+                    force * 3.,
+                );
         }
 
         // DEBBUGER.draw_box(macroquad::prelude::GREEN);

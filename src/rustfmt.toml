@@ -1,0 +1,5 @@
+reorder_imports = true
+attr_fn_like_width = 40
+chain_width = 40
+fn_call_width = 20
+
