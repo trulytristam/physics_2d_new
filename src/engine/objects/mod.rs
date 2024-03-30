@@ -156,7 +156,7 @@ impl Object {
                 draw_circle(
                     center.x as f32,
                     center.y as f32,
-                    5.,
+                    1.,
                     macroquad::color::WHITE,
                 );
             }

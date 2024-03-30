@@ -104,7 +104,82 @@ impl EvolveResult {
 }
 
 impl Simplex {
-    pub fn draw(&self, _a: &Collider, _b: &Collider) {
+    pub fn evolve_simplex(&mut self, p: MinkowPoint) -> EvolveResult {
+        if !self.candidate_valid(&p) {
+            let mut closest = self.closest_point_to_origin();
+            if self.collision_found {
+                return EvolveResult::terminate_(true, closest);
+            }
+            return EvolveResult::terminate_(false, closest);
+        }
+        //grow simplex
+        let out = match self.minko_points.len() {
+            //test
+            0 => {
+                self.minko_points.push(p);
+                EvolveResult::continue_()
+            }
+            1 => {
+                self.minko_points.push(p);
+                EvolveResult::continue_()
+            }
+            2 => {
+                self.push_arrange_clockwise(p);
+                let closest = self.closest_point_to_origin();
+                let shape = self
+                    .minko_points
+                    .iter()
+                    .map(|p| p.p)
+                    .collect();
+                if point_inside_shape(
+                    &shape,
+                    &V2::new(0., 0.),
+                ) {
+                    self.collision_found = true;
+                    return EvolveResult::terminate_(true, closest);
+                }
+                EvolveResult::continue_()
+            }
+            3 => {
+                self.clean_simplex();
+                self.push_arrange_clockwise(p);
+                let closest = self.closest_point_to_origin();
+                let shape = self
+                    .minko_points
+                    .iter()
+                    .map(|p| p.p)
+                    .collect();
+                if point_inside_shape(
+                    &shape,
+                    &V2::new(0., 0.),
+                ) {
+                    self.collision_found = true;
+                    return EvolveResult::terminate_(true, closest);
+                }
+                EvolveResult::continue_()
+            }
+
+            _ => unreachable!("gjk has to many points: from evolve_simplex()"),
+        };
+
+        //find closest point on minkowdiff to origin
+        //also asign new direction towards origin
+        let closest = self.closest_point_to_origin();
+        self.dir = closest.as_ref().unwrap().get_new_dir();
+        if self.minko_points.len() > 0
+            && closest
+                .as_ref()
+                .unwrap()
+                .point
+                .magnitude()
+                < 0.001
+        {
+            self.collision_found = true;
+            return EvolveResult::terminate_(true, closest);
+        }
+        return out;
+    }
+    pub fn draw(&self, closest: &ClosestPoint, _a: &Collider, _b: &Collider) {
         let colors = vec![
             macroquad::prelude::RED,
             macroquad::prelude::GREEN,
@@ -143,79 +218,23 @@ impl Simplex {
             }
             (..) => (),
         }
-    }
-    pub fn evolve_simplex(&mut self, p: MinkowPoint) -> EvolveResult {
-        let mut closest = self.closest_point_to_origin();
-        if !self.candidate_valid(&p) {
-            if self.collision_found {
-                return EvolveResult::terminate_(true, closest);
-            }
-            return EvolveResult::terminate_(false, closest);
-        }
-        //grow simplex
-        let out = match self.minko_points.len() {
-            //test
-            0 => {
-                self.minko_points.push(p);
-                EvolveResult::continue_()
-            }
-            1 => {
-                self.minko_points.push(p);
-                EvolveResult::continue_()
-            }
-            2 => {
-                self.push_arrange_clockwise(p);
-                let shape = self
-                    .minko_points
-                    .iter()
-                    .map(|p| p.p)
-                    .collect();
-                if point_inside_shape(
-                    &shape,
-                    &V2::new(0., 0.),
-                ) {
-                    self.collision_found = true;
-                    return EvolveResult::terminate_(true, closest);
-                }
-                EvolveResult::continue_()
-            }
-            3 => {
-                self.clean_simplex();
-                self.push_arrange_clockwise(p);
-                let shape = self
-                    .minko_points
-                    .iter()
-                    .map(|p| p.p)
-                    .collect();
-                if point_inside_shape(
-                    &shape,
-                    &V2::new(0., 0.),
-                ) {
-                    self.collision_found = true;
-                    return EvolveResult::terminate_(true, closest);
-                }
-                EvolveResult::continue_()
-            }
-
-            _ => unreachable!("gjk has to many points: from evolve_simplex()"),
-        };
-
-        //find closest point on minkowdiff to origin
-        //also asign new direction towards origin
-        closest = self.closest_point_to_origin();
-        self.dir = closest.as_ref().unwrap().get_new_dir();
-        if self.minko_points.len() > 0
-            && closest
-                .as_ref()
-                .unwrap()
-                .point
-                .magnitude()
-                < 0.001
-        {
-            self.collision_found = true;
-            return EvolveResult::terminate_(true, closest);
-        }
-        return out;
+        let n = closest.closest_on_shapes(_a, _b);
+        let a_p = n.0;
+        let b_p = n.1;
+        // println!("points: {:?}", n);
+        DEBBUGER.draw_dot(
+            a_p.world_to_screen(),
+            macroquad::prelude::BLACK,
+        );
+        DEBBUGER.draw_dot(
+            b_p.world_to_screen(),
+            macroquad::prelude::BLACK,
+        );
+        //Draw origin
+        DEBBUGER.draw_dot(
+            V2::new(0., 0.).world_to_screen(),
+            macroquad::color::BROWN,
+        );
     }
 
     fn candidate_valid(&self, candidate: &MinkowPoint) -> bool {
