@@ -133,6 +133,11 @@ impl Simplex {
                         b.world_to_screen(),
                         colors[i],
                     );
+                    DEBBUGER.draw_line(
+                        a.world_to_screen(),
+                        b.world_to_screen(),
+                        colors[i],
+                    );
                     i += 1;
                 }
             }

@@ -62,15 +62,16 @@ impl EngineCollisionInfo {
                     let a_p = n.0;
                     let b_p = n.1;
                     // println!("points: {:?}", n);
-                    // DEBBUGER.draw_dot(
-                    //     a_p.world_to_screen(),
-                    //     prelude::BLACK,
-                    // );
-                    // DEBBUGER.draw_dot(
-                    //     b_p.world_to_screen(),
-                    //     prelude::BLACK,
-                    // );
+                    DEBBUGER.draw_dot(
+                        a_p.world_to_screen(),
+                        prelude::BLACK,
+                    );
+                    DEBBUGER.draw_dot(
+                        b_p.world_to_screen(),
+                        prelude::BLACK,
+                    );
                 }
+
                 //---------
                 if gjk_result.is_colliding {
                     let m = Manifold {
